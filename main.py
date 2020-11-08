@@ -22,29 +22,13 @@
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from Program import Program
-from Flashcard import Flashcard
-from Deck import Deck
+
 
 def main():
-    decks = create_dummy_deck()
+    program = Program()
+    program.mainloop()
 
-    # Initialize Program() object from Program module
-    # Create window variable and set its value as the initialized Program object
-    program = Program(decks)
-
-def create_dummy_deck():
-    deck = Deck("USA capital cities")
-    flashcards = create_dummy_flashcards(deck)
-    deck.flashcards = flashcards
-    decks = [deck]
-    return decks
-
-def create_dummy_flashcards(deck):
-    flashcard1 = Flashcard("Capital of Texas?", "Austin", deck)
-    flashcard2 = Flashcard("Capital of California?", "Sacramento", deck)
-    flashcard3 = Flashcard("Capital of Washington?", "Olympia", deck)
-    flashcards = [flashcard1, flashcard2, flashcard3]
-    return flashcards
 
 # Call the main function
-main()
+if __name__ == "__main__":
+    main()

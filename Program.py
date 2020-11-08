@@ -21,117 +21,49 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import tkinter
+import tkinter as tk
+from tkinter import font as tkfont
 import tkinter.ttk
 from Flashcard import Flashcard
 from Deck import Deck
+from StudyFrame import StudyFrame
+from EditFrame import EditFrame
 
 
-class Program:
-    # Holds the current deck's index in the decks list
-    deck_index = int()
+# Inherit from top level widget class (Tk) of tkinter module (tk)
+# For additional information:
+#   https://stackoverflow.com/questions/34301300/tkinter-understanding-how-to-switch-frames
+#   https://stackoverflow.com/questions/7546050/switch-between-two-frames-in-tkinter/7557028#7557028
+class Program(tk.Tk):
+    def __init__(self, *args, **kwargs):
+        tk.Tk.__init__(self, *args, **kwargs)
 
-    # Holds the current flashcard's index in the flashcards list
-    flashcard_index = int()
+        self.title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="italic")
 
-    # Holds if card is flipped
-    flipped = False
+        self.decks = self.create_dummy_deck()
 
-    def __init__(self, decks):
-
-        print("MainWindow initialization begins")
-
-        # When object is initialized there is not any deck selected. Therefore deck index and flashcard index will be -1.
-        self.deck_index = -1
-        self.flashcard_index = -1
-
-        # self.decks holds the Deck list
-        self.decks = decks
-
-        # self.deck holds the current deck. As the main window is now being initialized, there is no selected deck.
-        self.deck: Deck = None
-
-        # self.flashcards will be a list holding the flashcards of the current deck.
-        self.flashcards = [Flashcard]
-
-        # As there is not any selected Deck, current flashcard will be None.
-        self.flashcard: Flashcard = None
-
-        print("MainWindow initialized")
-
-        # Create the main window widget
-        self.window = tkinter.Tk()
-
-        self.center_window()
+        # # Create the main window widget
+        # self.window_name = self.winfo_parent()
+        # print("self.window_name: ", self.window_name)
+        # self.window = tk.Widget._nametowidget(self, name=self.window_name)
 
         # Set the app icon
         # Used https://www.favicon-generator.org/
-        self.window.iconbitmap("ico/favicon.ico")
+        self.iconbitmap("ico/favicon.ico")
 
         # Set title of the main window
-        self.window.title("Flashcards")
+        self.title("Flashcards")
 
         # Disable resize on main window
-        self.window.resizable(False, False)
-
-        # Create two frames, top and bottom
-        self.top_frame = tkinter.Frame(self.window)
-        self.bottom_frame = tkinter.Frame(self.window)
-        self.status_frame = tkinter.Frame(self.window)
-
-        index_card_image = tkinter.PhotoImage(file='image/index_card.gif')
-        self.card_front = tkinter.Label(self.top_frame, text="Load a flashcard", wraplength=350,
-                                        font=("Arial", 14, "bold"),
-                                        image=index_card_image, compound=tkinter.CENTER)
-        self.card_front.grid(row=0, column=0, rowspan=6)
-
-        # Create three buttons for the bottom frame
-        self.previous_button = tkinter.ttk.Button(self.bottom_frame, text='Previous',
-                                                  command=self.show_previous_flashcard)
-        self.show_hide_button = tkinter.ttk.Button(self.bottom_frame, text='Flip', command=self.flip)
-        self.next_button = tkinter.ttk.Button(self.bottom_frame, text='Next', command=self.show_next_flashcard)
-
-        # self.show_hide_button.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER)
-
-        # self.previous_button.pack(side='left')
-        self.previous_button.grid(row=0, column=0, padx=10, pady=5)
-        self.show_hide_button.grid(row=0, column=1, padx=10, pady=5)
-        self.next_button.grid(row=0, column=2, padx=10, pady=5)
-
-        # Create "Deck Table" as a TreeView
-        # This object will be used to edit flashcards in the deck
-        self.table = tkinter.ttk.Treeview(self.window, columns=["Question", "Answer"])
-
-        # Define table columns
-        self.deck_table_columns = ["Question", "Answer"]
-        self.table.column("#0", width=120, minwidth=25)
-        self.table.column("Question", anchor="w", width=120)
-        self.table.column("Answer", anchor="e", width=120)
-
-        # Define table column headings (headers?)
-        self.table.heading("#0", text="Label", anchor="w")
-        self.table.heading("Question", text="Question", anchor="w")
-        self.table.heading("Answer", text="Answer", anchor="e")
-
-        # Add a status bar
-        status_bar_text = self.status_bar_text()
-        print("status_bar_text: ", status_bar_text)
-        self.status_bar = tkinter.ttk.Label(self.status_frame, text=status_bar_text, border=1, relief=tkinter.SUNKEN)
-        self.status_bar.pack(fill=tkinter.X)
-        # self.status_bar = tkinter.ttk.Label(self.status_frame, text=status_bar_text, border=1, relief=tkinter.SUNKEN)
-        # self.status_bar.grid(row=1, column=0, columnspan=3)
-
-        self.top_frame.grid()
-        self.bottom_frame.grid()
-        self.status_frame.grid(sticky="we")
+        self.resizable(False, False)
 
         # Create menu bar
-        menubar = tkinter.Menu(self.window)
-        self.window.config(menu=menubar)
+        menu_bar = tk.Menu(self)
+        self.config(menu=menu_bar)
 
         # Create Decks menu
-        decks_menu = tkinter.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="Deck", menu=decks_menu)
+        decks_menu = tk.Menu(menu_bar, tearoff=0)
+        menu_bar.add_cascade(label="Deck", menu=decks_menu)
 
         decks_menu.add_command(label="New deck...", command=self.new_deck)
         decks_menu.add_command(label="Open a deck...", command=self.open_deck)
@@ -139,86 +71,77 @@ class Program:
         decks_menu.add_command(label="Quit", command=self.open_deck)
 
         # Create Flashcard menu
-        flashcard_menu = tkinter.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="Flashcard", menu=flashcard_menu)
+        flashcard_menu = tk.Menu(menu_bar, tearoff=0)
+        menu_bar.add_cascade(label="Flashcard", menu=flashcard_menu)
         flashcard_menu.add_command(label="Add new flashcard...", command=self.open_deck)
         flashcard_menu.add_command(label="Change this question...", command=self.new_deck)
         flashcard_menu.add_command(label="Change this answer...", command=self.new_deck)
         flashcard_menu.add_command(label="Remove from deck...", command=self.new_deck)
 
         # Create About menu
-        help_menu = tkinter.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="Help", menu=help_menu)
+        help_menu = tk.Menu(menu_bar, tearoff=0)
+        menu_bar.add_cascade(label="Help", menu=help_menu)
         help_menu.add_command(label="About", command=self.new_deck)
 
-        # DEBUG: Load deck
-        self.load_deck(0)
+        # the container is where we'll stack a bunch of frames
+        # on top of each other, then the one we want visible
+        # will be raised above the others
+        container = tk.Frame(self)
+        container.pack(side="top", fill="both", expand=True)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+
+        # frames dictionary will hold all the Frames that the Program consists of.
+        self.frames = dict()
+
+        # Iterate through the "Frame classes", classes that inherits from tk.Frame
+        for frame in (StudyFrame, EditFrame):
+            frame_name = frame.__name__
+            print("frame_name is", frame_name)
+
+            # Initialize child frame with two parameters, parent and controller Parent is the container, an attribute
+            # of the Program class, that will contain all frames Controller is the Program class itself. By passing
+            # these parameters, child frame will have references to access attributes and methods of the Program class.
+            frame = frame(parent=container, controller=self)
+
+            # Add the frame that has just been initialized to the dictionary: self.frames
+            # So that Program class instance can access those frames later by calling their names
+            self.frames[frame_name] = frame
+
+            # Put all the frames to the same location (row and column) so that they will be stacked
+            # on top of each other. Only the top Frame will be shown to the user. This is a default behavior in many
+            # GUIs. We will only change the top Frame to change the view in the main window.
+            frame.grid(row=0, column=0, sticky="nsew")
+
+        self.show_frame("StudyFrame")
+
+        self.geometry("483x420")
+
+        self.center_window()
 
         # Enter the tkinter main loop
-        tkinter.mainloop()
+        # self.mainloop()
 
-    def load_deck(self, index):
-        self.deck_index = index
-        self.deck = self.decks[self.deck_index]
-        self.flashcard_index = 0
-        self.flashcards = self.deck.flashcards
-        self.flashcard = self.flashcards[self.flashcard_index]
-        self.load_flashcard()
-        self.set_button_status()
-        print("deck is loaded. deck index: ", self.deck_index, " deck title: ", self.deck.title)
-        print("first flashcard loaded. index: ", self.flashcard_index, " question: ", self.flashcard.question)
+    def show_frame(self, frame_name):
+        # Show a frame for the given page name
+        frame = self.frames[frame_name]
+        frame_name = frame.__class__.__name__
+        print("show_frame will load the frame: ", frame_name)
+        frame.tkraise()
 
-    def load_flashcard(self):
-        print("load_flashcard")
-        print("self.flashcard_index: ", self.flashcard_index)
-        self.flashcard = self.flashcards[self.flashcard_index]
-        if self.flipped:
-            self.card_front.config(fg="green")
-            self.card_front.config(text=self.flashcard.answer)
-        else:
-            self.card_front.config(fg="red")
-            self.card_front.config(text=self.flashcard.question)
-        self.set_status_bar_text()
+    def create_dummy_deck(self):
+        deck = Deck("USA capital cities")
+        flashcards = self.create_dummy_flashcards(deck)
+        deck.flashcards = flashcards
+        decks = [deck]
+        return decks
 
-    def show_next_flashcard(self):
-        self.flipped = False
-        self.flashcard_index += 1
-        self.load_flashcard()
-        print("self.flashcard_index: ", self.flashcard_index, "; len(self.flashcards): ", len(self.flashcards))
-        self.set_button_status()
-
-    def show_previous_flashcard(self):
-        if self.flashcard_index != 0:
-            self.flipped = False
-            self.flashcard_index -= 1
-            self.load_flashcard()
-            print("self.flashcard_index: ", self.flashcard_index, "; len(self.flashcards): ", len(self.flashcards))
-            self.set_button_status()
-
-    def set_button_status(self):
-        if self.flashcard_index == 0:
-            self.previous_button.config(state='disabled')
-        else:
-            self.previous_button.config(state='enabled')
-        if self.flashcard_index == len(self.flashcards) - 1:
-            self.next_button.config(state='disabled')
-        else:
-            self.next_button.config(state='enabled')
-
-    def flip(self):
-        self.flipped = not self.flipped
-        self.load_flashcard()
-
-    def set_status_bar_text(self):
-        self.status_bar.config(text=self.status_bar_text())
-
-    def status_bar_text(self):
-        if self.deck is None:
-            return "Please load a deck."
-        else:
-            text = "Deck: " + self.deck.title + " | Flashcard " + str(self.flashcard_index + 1) + " out of " + str(
-                len(self.flashcards))
-            return text
+    def create_dummy_flashcards(self, deck):
+        flashcard1 = Flashcard("Capital of Texas?", "Austin", deck)
+        flashcard2 = Flashcard("Capital of California?", "Sacramento", deck)
+        flashcard3 = Flashcard("Capital of Washington?", "Olympia", deck)
+        flashcards = [flashcard1, flashcard2, flashcard3]
+        return flashcards
 
     def center_window(self):
         # self.window.update()
@@ -235,32 +158,24 @@ class Program:
         window_width = 483
         window_height = 420
 
-        # print(self.window.winfo_width())
-        # print(self.window.winfo_height())
+        print(self.winfo_width())
+        print(self.winfo_height())
 
-        screen_width = self.window.winfo_screenwidth()
-        screen_height = self.window.winfo_screenheight()
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
 
-        # print(screen_width)
-        # print(screen_height)
+        print(screen_width)
+        print(screen_height)
 
         x_cordinate = int((screen_width / 2) - (window_width / 2))
         y_cordinate = int((screen_height / 2) - (window_height / 2))
 
-        self.window.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))
+        # self.window.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))
+        self.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))
+
 
     def new_deck(self):
         pass
 
     def open_deck(self):
         pass
-
-    def hide_all_frames(self):
-        # Loop through all the children and delete them
-        for widget in self.top_frame.winfo_children():
-            widget.destroy()
-        for widget in self.bottom_frame.winfo_children():
-            widget.destroy()
-        for widget in self.status_bar.winfo_children():
-            widget.destroy()
-
