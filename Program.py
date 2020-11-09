@@ -49,7 +49,7 @@ class Program(tk.Tk):
 
         self.decks = self.create_dummy_deck()
 
-        self.deck : Deck = self.decks[0]
+        # self.deck : Deck = self.decks[0]
 
         # # Create the main window widget
         # self.window_name = self.winfo_parent()
@@ -136,16 +136,26 @@ class Program(tk.Tk):
 
     def create_dummy_deck(self):
         deck = Deck("USA capital cities")
-        flashcards = self.create_dummy_flashcards(deck)
-        deck.flashcards = flashcards
+        deck.flashcards = self.create_dummy_flashcards1(deck)
         decks = [deck]
+        deck = Deck("Network Ports")
+        deck.flashcards = self.create_dummy_flashcards2(deck)
+        decks.append(deck)
         return decks
 
-    def create_dummy_flashcards(self, deck):
+    def create_dummy_flashcards1(self, deck):
         flashcard1 = Flashcard("Capital of Texas?", "Austin", deck)
         flashcard2 = Flashcard("Capital of California?", "Sacramento", deck)
         flashcard3 = Flashcard("Capital of Washington?", "Olympia", deck)
         flashcards = [flashcard1, flashcard2, flashcard3]
+        return flashcards
+
+    def create_dummy_flashcards2(self, deck):
+        flashcard1 = Flashcard("FTP", "20, 21", deck)
+        flashcard2 = Flashcard("SSH", "22", deck)
+        flashcard3 = Flashcard("Telnet", "23", deck)
+        flashcard4 = Flashcard("SMTP", "25", deck)
+        flashcards = [flashcard1, flashcard2, flashcard3, flashcard4]
         return flashcards
 
     def center_window(self):
@@ -184,3 +194,10 @@ class Program(tk.Tk):
 
     def show_about_box(self):
         pass
+
+    # def select_deck(self, index):
+    #     self.deck = self.decks[index]
+
+    def open_deck(self, index):
+        self.frames["StudyFrame"].load_deck(index)
+        self.show_frame("StudyFrame")

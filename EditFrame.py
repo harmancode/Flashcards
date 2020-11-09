@@ -106,7 +106,11 @@ class EditFrame(tk.Frame):
         pass
 
     def open_deck(self):
-        pass
+        selected_item = self.treeview.focus()
+        # selected_item_dict = self.treeview.item(selected_item)
+        index = self.treeview.index(selected_item)
+        # print("selected desk index: ", index)
+        self.controller.open_deck(index)
 
     def go_back(self):
         self.controller.show_frame("StudyFrame")
