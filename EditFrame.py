@@ -1,6 +1,7 @@
 try:
     import tkinter as tk  # python 3
     from tkinter import font as tkfont  # python 3
+    import tkinter.simpledialog
 except ImportError:
     import Tkinter as tk  # python 2
     import tkFont as tkfont  # python 2
@@ -38,18 +39,13 @@ class EditFrame(tk.Frame):
         self.treeview.heading("#1", text="Title", anchor="w",)
         self.treeview.heading("#2", text="Flashcards", anchor="e")
 
-        # Add data to the treeview
-        decks = self.controller.decks
-        deck_count = len(decks)
-        for index in range(deck_count):
-            title = decks[index].title
-            count = len(decks[index].flashcards)
-            self.treeview.insert(parent='', index='end', iid=index, text="", values=(title, count))
+        self.decks = self.controller.decks
+        self.add_data_to_treeview()
 
         self.treeview.grid(padx=10, pady=10, sticky="nsew")
 
         # Select first row if there is any
-        if deck_count > 0:
+        if len(self.decks) > 0:
             self.treeview.selection_set(0)
             self.treeview.focus(0)
 
@@ -97,7 +93,28 @@ class EditFrame(tk.Frame):
         pass
 
     def rename_deck(self):
-        pass
+        new_title = tkinter.simpledialog.askstring(title = "Rename deck", prompt = "Please enter new title of the deck:", initialvalue=self.selected_deck_title())
+        print(new_title)
+        selected_index = self.selected_deck_index()
+        self.selected_deck().title = new_title
+
+        # self.treeview.delete(*self.treeview.get_children())
+        for i in self.treeview.get_children():
+            self.treeview.delete(i)
+
+        self.add_data_to_treeview()
+        self.treeview.selection_set(selected_index)
+        self.treeview.focus(selected_index)
+
+
+        # # Change value in treeview
+        # count = self.selected_deck_flashcard_count
+        # focused_index_string = str(self.selected_deck_index())
+        # self.treeview.delete(self.selected_deck_index())
+        # self.treeview.insert(parent='', index='end', iid=focused_index_string, text="", values=(new_title, count))
+        # # self.treeview.insert("", str(focused)[1:], values=("", new_title))
+        # # print("self.decks: ", self.decks)
+        # # print("self.controller.decks: ", self.controller.decks)
 
     def delete_deck(self):
         pass
@@ -106,11 +123,37 @@ class EditFrame(tk.Frame):
         pass
 
     def open_deck(self):
-        selected_item = self.treeview.focus()
-        # selected_item_dict = self.treeview.item(selected_item)
-        index = self.treeview.index(selected_item)
-        # print("selected desk index: ", index)
-        self.controller.open_deck(index)
+        self.controller.open_deck(self.selected_deck_index())
 
     def go_back(self):
         self.controller.show_frame("StudyFrame")
+
+    def selected_deck_index(self):
+        selected_item = self.treeview.focus()
+        # selected_item_dict = self.treeview.item(selected_item)
+        index = self.treeview.index(selected_item)
+        return index
+
+    def selected_deck_title(self):
+        selected_item = self.treeview.focus()
+        selected_item_dict = self.treeview.item(selected_item)
+        item_list = selected_item_dict["values"]
+        title = item_list[0]
+        print("title: ", title)
+        return title
+
+    def selected_deck(self):
+        return self.decks[self.selected_deck_index()]
+
+    def selected_deck_flashcard_count(self):
+        index = self.selected_deck_index()
+        count = len(self.decks[index].flashcards)
+        return count
+
+    def add_data_to_treeview(self):
+        # Add data to the treeview
+        deck_count = len(self.decks)
+        for index in range(deck_count):
+            title = self.decks[index].title
+            count = self.selected_deck_flashcard_count()
+            self.treeview.insert(parent='', index='end', iid=index, text="", values=(title, count))
