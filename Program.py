@@ -34,13 +34,22 @@ from EditFrame import EditFrame
 # For additional information:
 #   https://stackoverflow.com/questions/34301300/tkinter-understanding-how-to-switch-frames
 #   https://stackoverflow.com/questions/7546050/switch-between-two-frames-in-tkinter/7557028#7557028
+#   https://stackoverflow.com/questions/48122796/tkinter-creating-multiple-frames-inside-a-frame-class
 class Program(tk.Tk):
+
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
 
-        self.title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="italic")
+        # self.WINDOW_HEIGHT = 483
+        # self.WINDOW_WIDTH = 420
+
+        # self.geometry(str(self.WINDOW_HEIGHT) + "x" + str(self.WINDOW_WIDTH))
+
+        # self.title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="italic")
 
         self.decks = self.create_dummy_deck()
+
+        self.deck : Deck = self.decks[0]
 
         # # Create the main window widget
         # self.window_name = self.winfo_parent()
@@ -58,38 +67,36 @@ class Program(tk.Tk):
         self.resizable(False, False)
 
         # Create menu bar
-        menu_bar = tk.Menu(self)
-        self.config(menu=menu_bar)
+        self.menu_bar = tk.Menu(self)
+        self.config(menu=self.menu_bar)
 
         # Create Decks menu
-        decks_menu = tk.Menu(menu_bar, tearoff=0)
-        menu_bar.add_cascade(label="Deck", menu=decks_menu)
+        self.decks_menu = tk.Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label="Deck", menu=self.decks_menu)
+        self.decks_menu.add_command(label="Manage decks...", command=self.edit_deck)
+        self.decks_menu.add_separator()
+        self.decks_menu.add_command(label="Quit", command=self.quit)
 
-        decks_menu.add_command(label="New deck...", command=self.new_deck)
-        decks_menu.add_command(label="Open a deck...", command=self.open_deck)
-        decks_menu.add_separator()
-        decks_menu.add_command(label="Quit", command=self.open_deck)
-
-        # Create Flashcard menu
-        flashcard_menu = tk.Menu(menu_bar, tearoff=0)
-        menu_bar.add_cascade(label="Flashcard", menu=flashcard_menu)
-        flashcard_menu.add_command(label="Add new flashcard...", command=self.open_deck)
-        flashcard_menu.add_command(label="Change this question...", command=self.new_deck)
-        flashcard_menu.add_command(label="Change this answer...", command=self.new_deck)
-        flashcard_menu.add_command(label="Remove from deck...", command=self.new_deck)
+        # # Create Flashcard menu
+        # flashcard_menu = tk.Menu(self.menu_bar, tearoff=0)
+        # self.menu_bar.add_cascade(label="Flashcard", menu=flashcard_menu)
+        # flashcard_menu.add_command(label="Add new flashcard...", command=self.open_deck)
+        # flashcard_menu.add_command(label="Change this question...", command=self.new_deck)
+        # flashcard_menu.add_command(label="Change this answer...", command=self.new_deck)
+        # flashcard_menu.add_command(label="Remove from deck...", command=self.new_deck)
 
         # Create About menu
-        help_menu = tk.Menu(menu_bar, tearoff=0)
-        menu_bar.add_cascade(label="Help", menu=help_menu)
-        help_menu.add_command(label="About", command=self.new_deck)
+        help_menu = tk.Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label="Help", menu=help_menu)
+        help_menu.add_command(label="About", command=self.show_about_box)
 
         # the container is where we'll stack a bunch of frames
         # on top of each other, then the one we want visible
         # will be raised above the others
-        container = tk.Frame(self)
-        container.pack(side="top", fill="both", expand=True)
-        container.grid_rowconfigure(0, weight=1)
-        container.grid_columnconfigure(0, weight=1)
+        self.container = tk.Frame(self)
+        self.container.pack(side="top", fill="both", expand=True)
+        self.container.grid_rowconfigure(0, weight=1)
+        self.container.grid_columnconfigure(0, weight=1)
 
         # frames dictionary will hold all the Frames that the Program consists of.
         self.frames = dict()
@@ -102,7 +109,7 @@ class Program(tk.Tk):
             # Initialize child frame with two parameters, parent and controller Parent is the container, an attribute
             # of the Program class, that will contain all frames Controller is the Program class itself. By passing
             # these parameters, child frame will have references to access attributes and methods of the Program class.
-            frame = frame(parent=container, controller=self)
+            frame = frame(parent=self.container, controller=self)
 
             # Add the frame that has just been initialized to the dictionary: self.frames
             # So that Program class instance can access those frames later by calling their names
@@ -114,8 +121,6 @@ class Program(tk.Tk):
             frame.grid(row=0, column=0, sticky="nsew")
 
         self.show_frame("StudyFrame")
-
-        self.geometry("483x420")
 
         self.center_window()
 
@@ -174,8 +179,8 @@ class Program(tk.Tk):
         self.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))
 
 
-    def new_deck(self):
-        pass
+    def edit_deck(self):
+        self.show_frame("EditFrame")
 
-    def open_deck(self):
+    def show_about_box(self):
         pass

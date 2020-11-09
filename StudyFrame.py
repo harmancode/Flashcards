@@ -42,7 +42,7 @@ class StudyFrame(tk.Frame):
         self.decks = controller.decks
 
         # self.deck holds the current deck. As the main window is now being initialized, there is no selected deck.
-        self.deck: Deck = None
+        self.deck = controller.deck
 
         # self.flashcards will be a list holding the flashcards of the current deck.
         self.flashcards = [Flashcard]
