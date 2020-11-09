@@ -26,4 +26,4 @@ from Flashcard import Flashcard
 class Deck:
     def __init__(self, title):
         self.title = title
-        self.flashcards = [Flashcard]
+        self.flashcards: [Flashcard] = []

@@ -1,3 +1,5 @@
+from Deck import Deck
+
 try:
     import tkinter as tk  # python 3
     from tkinter import font as tkfont  # python 3
@@ -90,7 +92,14 @@ class EditFrame(tk.Frame):
         self.go_back_button.grid(row=0, column=0, padx=10, pady=10)
 
     def new_deck(self):
-        pass
+        new_title = tkinter.simpledialog.askstring(title = "New deck", prompt = "Please enter the title of the new deck:", initialvalue="")
+        new_title = new_title.strip()
+        if len(new_title) > 0:
+            new_deck = Deck(title=new_title)
+            self.decks.append(new_deck)
+            self.refresh_treeview()
+        else:
+            tk.messagebox.showwarning("Info", "Title cannot be empty.")
 
     def rename_deck(self):
         new_title = tkinter.simpledialog.askstring(title = "Rename deck", prompt = "Please enter new title of the deck:", initialvalue=self.selected_deck_title())
@@ -98,14 +107,10 @@ class EditFrame(tk.Frame):
         selected_index = self.selected_deck_index()
         self.selected_deck().title = new_title
 
-        # self.treeview.delete(*self.treeview.get_children())
-        for i in self.treeview.get_children():
-            self.treeview.delete(i)
+        self.refresh_treeview()
 
-        self.add_data_to_treeview()
         self.treeview.selection_set(selected_index)
         self.treeview.focus(selected_index)
-
 
         # # Change value in treeview
         # count = self.selected_deck_flashcard_count
@@ -116,6 +121,15 @@ class EditFrame(tk.Frame):
         # # print("self.decks: ", self.decks)
         # # print("self.controller.decks: ", self.controller.decks)
 
+    def refresh_treeview(self):
+        self.remove_all_data_from_treeview()
+        self.add_data_to_treeview()
+
+    def remove_all_data_from_treeview(self):
+        # self.treeview.delete(*self.treeview.get_children())
+        for i in self.treeview.get_children():
+            self.treeview.delete(i)
+
     def delete_deck(self):
         pass
 
@@ -123,7 +137,12 @@ class EditFrame(tk.Frame):
         pass
 
     def open_deck(self):
-        self.controller.open_deck(self.selected_deck_index())
+        selected_deck = self.selected_deck()
+        count = len(selected_deck.flashcards)
+        if count > 0:
+            self.controller.open_deck(self.selected_deck_index())
+        else:
+            tk.messagebox.showwarning("Info","This deck is empty. Please add some flashcards to it first by clicking 'Edit Flashcards' button.")
 
     def go_back(self):
         self.controller.show_frame("StudyFrame")
@@ -155,5 +174,5 @@ class EditFrame(tk.Frame):
         deck_count = len(self.decks)
         for index in range(deck_count):
             title = self.decks[index].title
-            count = self.selected_deck_flashcard_count()
+            count = len(self.decks[index].flashcards)
             self.treeview.insert(parent='', index='end', iid=index, text="", values=(title, count))
