@@ -24,10 +24,12 @@
 import tkinter as tk
 from tkinter import font as tkfont
 import tkinter.ttk
+
+from ManageFlashcardsFrame import ManageFlashcardsFrame
 from Flashcard import Flashcard
 from Deck import Deck
 from StudyFrame import StudyFrame
-from EditFrame import EditFrame
+from ManageDecksFrame import ManageDecksFrame
 
 
 # Inherit from top level widget class (Tk) of tkinter module (tk)
@@ -37,11 +39,11 @@ from EditFrame import EditFrame
 #   https://stackoverflow.com/questions/48122796/tkinter-creating-multiple-frames-inside-a-frame-class
 class Program(tk.Tk):
 
+    WINDOW_WIDTH = 483
+    WINDOW_HEIGHT = 440
+
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
-
-        # self.WINDOW_HEIGHT = 483
-        # self.WINDOW_WIDTH = 420
 
         # self.geometry(str(self.WINDOW_HEIGHT) + "x" + str(self.WINDOW_WIDTH))
 
@@ -49,7 +51,7 @@ class Program(tk.Tk):
 
         self.decks = self.create_dummy_deck()
 
-        # self.deck : Deck = self.decks[0]
+        self.deck : Deck = None
 
         # # Create the main window widget
         # self.window_name = self.winfo_parent()
@@ -65,6 +67,8 @@ class Program(tk.Tk):
 
         # Disable resize on main window
         self.resizable(False, False)
+        # self.maxsize(Program.WINDOW_HEIGHT, Program.WINDOW_WIDTH)
+        # self.minsize(Program.WINDOW_HEIGHT, Program.WINDOW_WIDTH)
 
         # Create menu bar
         self.menu_bar = tk.Menu(self)
@@ -72,8 +76,9 @@ class Program(tk.Tk):
 
         # Create Decks menu
         self.decks_menu = tk.Menu(self.menu_bar, tearoff=0)
-        self.menu_bar.add_cascade(label="Deck", menu=self.decks_menu)
-        self.decks_menu.add_command(label="Manage decks...", command=self.edit_deck)
+        self.menu_bar.add_cascade(label="Menu", menu=self.decks_menu)
+        self.decks_menu.add_command(label="Decks...", command=self.manage_decks)
+        self.decks_menu.add_command(label="Flashcards...", command=self.manage_flashcards)
         self.decks_menu.add_separator()
         self.decks_menu.add_command(label="Quit", command=self.quit)
 
@@ -102,7 +107,7 @@ class Program(tk.Tk):
         self.frames = dict()
 
         # Iterate through the "Frame classes", classes that inherits from tk.Frame
-        for frame in (StudyFrame, EditFrame):
+        for frame in (StudyFrame, ManageDecksFrame, ManageFlashcardsFrame):
             frame_name = frame.__name__
             print("frame_name is", frame_name)
 
@@ -170,8 +175,8 @@ class Program(tk.Tk):
         # window_width = 483
         # window_height = 370
 
-        window_width = 483
-        window_height = 420
+        window_width = Program.WINDOW_WIDTH
+        window_height = Program.WINDOW_HEIGHT
 
         print(self.winfo_width())
         print(self.winfo_height())
@@ -189,8 +194,8 @@ class Program(tk.Tk):
         self.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))
 
 
-    def edit_deck(self):
-        self.show_frame("EditFrame")
+    def manage_decks(self):
+        self.show_frame("ManageDecksFrame")
 
     def show_about_box(self):
         pass
@@ -201,3 +206,7 @@ class Program(tk.Tk):
     def open_deck(self, index):
         self.frames["StudyFrame"].load_deck(index)
         self.show_frame("StudyFrame")
+
+    def manage_flashcards(self):
+        self.frames["ManageFlashcardsFrame"].load_deck()
+        self.show_frame("ManageFlashcardsFrame")

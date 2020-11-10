@@ -107,6 +107,7 @@ class StudyFrame(tk.Frame):
     def load_deck(self, index):
         self.deck_index = index
         self.deck = self.decks[self.deck_index]
+        self.controller.deck = self.deck
         self.flashcard_index = 0
         self.flashcards = self.deck.flashcards
         self.flashcard = self.flashcards[self.flashcard_index]

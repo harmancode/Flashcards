@@ -9,7 +9,7 @@ except ImportError:
     import tkFont as tkfont  # python 2
 
 
-class EditFrame(tk.Frame):
+class ManageDecksFrame(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -25,7 +25,7 @@ class EditFrame(tk.Frame):
         self.select_deck_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
         # Setup Treeview
-        self.treeview = tk.ttk.Treeview(self.select_deck_frame, columns=("Question", "Answer"))
+        self.treeview = tk.ttk.Treeview(self.select_deck_frame, columns=("Title", "Flashcards"))
 
         # Define columns
         # self.treeview['columns'] = ("Question", "Answer")
@@ -103,14 +103,13 @@ class EditFrame(tk.Frame):
 
     def rename_deck(self):
         new_title = tkinter.simpledialog.askstring(title = "Rename deck", prompt = "Please enter new title of the deck:", initialvalue=self.selected_deck_title())
-        print(new_title)
-        selected_index = self.selected_deck_index()
-        self.selected_deck().title = new_title
-
-        self.refresh_treeview()
-
-        self.treeview.selection_set(selected_index)
-        self.treeview.focus(selected_index)
+        if new_title is not None:
+            print(new_title)
+            selected_index = self.selected_deck_index()
+            self.selected_deck().title = new_title
+            self.refresh_treeview()
+            self.treeview.selection_set(selected_index)
+            self.treeview.focus(selected_index)
 
         # # Change value in treeview
         # count = self.selected_deck_flashcard_count
@@ -134,7 +133,8 @@ class EditFrame(tk.Frame):
         pass
 
     def edit_flashcards(self):
-        pass
+        self.controller.deck = self.selected_deck()
+        self.controller.manage_flashcards()
 
     def open_deck(self):
         selected_deck = self.selected_deck()
