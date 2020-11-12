@@ -135,20 +135,31 @@ class ManageFlashcardsFrame(tk.Frame):
         for i in self.treeview.get_children():
             self.treeview.delete(i)
 
-    def selected_treeview_index(self):
-        selected_item = self.treeview.focus()
-        # selected_item_dict = self.treeview.item(selected_item)
-        index = self.treeview.index(selected_item)
-        return index
+    def index_of_last_selection_in_treeview(self):
+        # https://stackoverflow.com/a/30615520/3780985
+        row_index = self.treeview.focus()
+        print("item: ", self.treeview.item(row_index))
+        return row_index
+
+
+    def get_flashcards_when_multiple_selection_in_treeview(self):
+        row_indexes = self.treeview.selection()
+        print(row_indexes)
+        selected_flashcards = []
+        for row_index in row_indexes:
+            selected_flashcard = self.controller.database_manager.deck.flashcards[int(row_index)]
+            selected_flashcards.append(selected_flashcard)
+            print("selected_flashcard: ", selected_flashcard.question)
+        return selected_flashcards
 
     def select_first_flashcard(self):
         # Select first row if there is any
         if len(self.controller.database_manager.deck.flashcards) > 0:
             self.treeview.selection_set(0)
             self.treeview.focus(0)
-            self.select_flashcard(0)
+            self.fill_entry_boxes_based_on_selected_row_index(0)
 
-    def select_flashcard(self, index):
+    def fill_entry_boxes_based_on_selected_row_index(self, index):
         if self.controller.database_manager.deck.flashcards[index] is not None:
             self.current_flashcard = self.controller.database_manager.deck.flashcards[index]
             self.question_entry.delete(0, tk.END)
@@ -160,7 +171,7 @@ class ManageFlashcardsFrame(tk.Frame):
 
     # Binding function
     def row_selected(self, event):
-        self.select_flashcard(self.selected_treeview_index())
+        self.fill_entry_boxes_based_on_selected_row_index(self.index_of_last_selection_in_treeview())
 
     def go_back(self):
         self.controller.show_frame("StudyFrame")
@@ -198,15 +209,15 @@ class ManageFlashcardsFrame(tk.Frame):
                     tk.messagebox.showwarning("Info", "Question cannot be empty.")
 
     def remove_flashcard(self):
-        # todo: Remove multiple flashcards
-        flashcard = self.controller.database_manager.deck.flashcards[self.selected_treeview_index()]
-        self.controller.database_manager.delete_flashcard_from_db(flashcard.flashcard_id)
-        self.controller.database_manager.deck.flashcards.remove(flashcard)
+        flashcards = self.get_flashcards_when_multiple_selection_in_treeview()
+        for flashcard in flashcards:
+            self.controller.database_manager.delete_flashcard_from_db(flashcard.flashcard_id)
+            self.controller.database_manager.deck.flashcards.remove(flashcard)
         self.refresh_treeview()
         self.select_first_flashcard()
 
     def edit_flashcard(self):
-        selected_treeview_index = self.selected_treeview_index()
+        selected_treeview_index = self.index_of_last_selection_in_treeview()
         flashcard = self.controller.database_manager.deck.flashcards[selected_treeview_index]
         question = str(self.question_entry.get())
         answer = str(self.answer_entry.get())
