@@ -98,6 +98,9 @@ class ManageDecksFrame(tk.Frame):
             new_deck_id = self.controller.database_manager.add_new_deck_to_db(new_title)
             new_deck = Deck(title=new_title, deck_id=new_deck_id)
             self.controller.database_manager.decks.append(new_deck)
+            # Set current deck when a new deck is added and count of decks was 0.
+            if len(self.controller.database_manager.decks) == 1:
+                self.controller.database_manager.set_current_deck_if_possible()
             self.refresh_treeview()
         else:
             tk.messagebox.showwarning("Info", "Title cannot be empty.")
@@ -106,8 +109,12 @@ class ManageDecksFrame(tk.Frame):
         new_title = tkinter.simpledialog.askstring(title = "Rename deck", prompt = "Please enter new title of the deck:", initialvalue=self.selected_deck_title())
         if new_title is not None:
             print(new_title)
-            selected_index = self.selected_deck_index()
-            self.selected_deck().title = new_title
+            selected_index = self.selected_treeview_index()
+
+            deck = self.selected_deck()
+            deck.title = new_title
+            self.controller.database_manager.rename_deck_in_db(deck.deck_id, deck.title)
+
             self.refresh_treeview()
             self.treeview.selection_set(selected_index)
             self.treeview.focus(selected_index)
@@ -131,7 +138,13 @@ class ManageDecksFrame(tk.Frame):
             self.treeview.delete(i)
 
     def delete_deck(self):
-        pass
+        deck = self.controller.database_manager.decks[self.selected_treeview_index()]
+        self.controller.database_manager.delete_deck_from_db(deck.deck_id)
+        self.controller.database_manager.decks.remove(deck)
+        self.refresh_treeview()
+        # Assign a new deck as current deck, if current deck has just been deleted.
+        if self.controller.database_manager.deck.deck_id == deck.deck_id:
+            self.controller.database_manager.set_current_deck_if_possible()
 
     def edit_flashcards(self):
         self.controller.database_manager.deck = self.selected_deck()
@@ -141,14 +154,14 @@ class ManageDecksFrame(tk.Frame):
         selected_deck = self.selected_deck()
         count = len(selected_deck.flashcards)
         if count > 0:
-            self.controller.open_deck(self.selected_deck_index())
+            self.controller.open_deck(self.selected_treeview_index())
         else:
             tk.messagebox.showwarning("Info","This deck is empty. Please add some flashcards to it first by clicking 'Edit Flashcards' button.")
 
     def go_back(self):
         self.controller.show_frame("StudyFrame")
 
-    def selected_deck_index(self):
+    def selected_treeview_index(self):
         selected_item = self.treeview.focus()
         # selected_item_dict = self.treeview.item(selected_item)
         index = self.treeview.index(selected_item)
@@ -164,7 +177,7 @@ class ManageDecksFrame(tk.Frame):
         return title
 
     def selected_deck(self):
-        selected_deck = self.controller.database_manager.decks[self.selected_deck_index()]
+        selected_deck = self.controller.database_manager.decks[self.selected_treeview_index()]
         print("selected_deck: ", selected_deck.title)
         print("selected_desk's flashcards:")
         for flashcard in selected_deck.flashcards:
@@ -172,7 +185,7 @@ class ManageDecksFrame(tk.Frame):
         return selected_deck
 
     def selected_deck_flashcard_count(self):
-        index = self.selected_deck_index()
+        index = self.selected_treeview_index()
         count = len(self.controller.database_manager.decks[index].flashcards)
         return count
 

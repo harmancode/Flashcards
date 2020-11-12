@@ -173,11 +173,11 @@ class DatabaseManager:
         flashcard_id = self.add_new_flashcard_to_db(deck.deck_id, "Capital of Texas?", "Austin")
         flashcard1 = Flashcard(flashcard_id, deck.deck_id, "Capital of Texas?", "Austin")
 
-        flashcard_id = self.add_new_flashcard_to_db(deck.deck_id, "Capital of California?", "Austin")
-        flashcard2 = Flashcard(flashcard_id, deck.deck_id, "Capital of Texas?", "Sacramento")
+        flashcard_id = self.add_new_flashcard_to_db(deck.deck_id, "Capital of California?", "Sacramento")
+        flashcard2 = Flashcard(flashcard_id, deck.deck_id, "Capital of California?", "Sacramento")
 
-        flashcard_id = self.add_new_flashcard_to_db(deck.deck_id, "Capital of Washington?", "Austin")
-        flashcard3 = Flashcard(flashcard_id, deck.deck_id, "Capital of Texas?", "Olympia")
+        flashcard_id = self.add_new_flashcard_to_db(deck.deck_id, "Capital of Washington?", "Olympia")
+        flashcard3 = Flashcard(flashcard_id, deck.deck_id, "Capital of Washington?", "Olympia")
 
         deck.flashcards = [flashcard1, flashcard2, flashcard3]
 
@@ -200,3 +200,71 @@ class DatabaseManager:
         flashcard4 = Flashcard(flashcard_id, deck.deck_id, question, answer)
 
         deck.flashcards = [flashcard1, flashcard2, flashcard3, flashcard4]
+
+    def rename_deck_in_db(self, deck_id, title):
+        self.open_db()
+        self.db_connection.set_trace_callback(print)
+        deck_row_tuple = (title, int(deck_id))
+        sql = ''' UPDATE deck
+                    SET title = ?
+                    WHERE deck_id = ? '''
+        self.cursor.execute(sql, deck_row_tuple)
+        self.close_db()
+
+    def update_flashcard_in_db(self, flashcard_id, question, answer):
+        self.open_db()
+        self.db_connection.set_trace_callback(print)
+        flashcard_row_tuple = (question, answer, int(flashcard_id))
+        sql = ''' UPDATE flashcard
+                            SET question = ? ,
+                                answer = ?
+                            WHERE flashcard_id = ? '''
+        self.cursor.execute(sql, flashcard_row_tuple)
+        self.close_db()
+
+    def delete_flashcard_from_db(self, flashcard_id):
+        self.open_db()
+        self.db_connection.set_trace_callback(print)
+        flashcard_row_tuple = (int(flashcard_id),)
+        sql = ''' DELETE FROM flashcard
+                              WHERE flashcard_id = ? '''
+        self.cursor.execute(sql, flashcard_row_tuple)
+        self.close_db()
+        print("\ndelete_flashcard_from_db just run\n")
+        self.print_all_flashcards()
+
+    def delete_deck_from_db(self, deck_id):
+        self.open_db()
+        # First delete all flashcards of this deck
+        flashcard_row_tuple = (int(deck_id),)
+        sql = ''' DELETE FROM flashcard
+                                      WHERE deck_id = ? '''
+        self.cursor.execute(sql, flashcard_row_tuple)
+        # Now delete the deck
+        deck_row_tuple = (int(deck_id),)
+        sql = ''' DELETE FROM deck
+                              WHERE deck_id = ? '''
+        self.cursor.execute(sql, deck_row_tuple)
+        self.close_db()
+        print("\ndelete_deck_from_db just run\n")
+        self.print_all_flashcards()
+
+    def set_current_deck_if_possible(self):
+        if len(self.decks) > 0:
+            self.deck = self.decks[0]
+        else:
+            self.deck = None
+
+    def print_all_flashcards(self):
+        print()
+        print("All Flashcards in the DB:")
+        self.open_db()
+        sql = ''' SELECT * FROM flashcard '''
+        results = self.cursor.execute(sql)
+        for result in results:
+            flashcard_string = ''
+            for index in range(4):
+                flashcard_string += str(result[index]) + " "
+            print(flashcard_string)
+        self.close_db()
+        print()

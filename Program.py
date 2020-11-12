@@ -42,6 +42,7 @@ class Program(tk.Tk):
 
     WINDOW_WIDTH = 483
     WINDOW_HEIGHT = 440
+    STUDYFRAME = "StudyFrame"
 
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
@@ -137,6 +138,8 @@ class Program(tk.Tk):
         frame = self.frames[frame_name]
         frame_name = frame.__class__.__name__
         print("show_frame will load the frame: ", frame_name)
+        if isinstance(frame, StudyFrame):
+            frame.prepare_view()
         frame.tkraise()
 
     def center_window(self):
@@ -181,7 +184,7 @@ class Program(tk.Tk):
 
     def open_deck(self, index):
         self.database_manager.load_deck(index)
-        self.frames["StudyFrame"].load_deck()
+        self.frames["StudyFrame"].prepare_view()
         self.show_frame("StudyFrame")
 
     def manage_flashcards(self):

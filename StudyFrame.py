@@ -10,6 +10,11 @@ from Flashcard import Flashcard
 
 
 class StudyFrame(tk.Frame):
+
+    NO_FLASHCARD_FOUND_TEXT = "Welcome to Flashcards!\n\nTo add some flashcards, click Flashcards in the Menu on the top of this window. Then click Add new flaschard button."
+    NO_DECK_FOUND_FLASHCARD_TEXT = "Welcome to Flashcards!\n\nTo create a deck, click Decks in the Menu on the top of this window. Then click New Deck button."
+    NO_DECK_FOUND_STATUS_TEXT = "Welcome to Flashcards!"
+
     def __init__(self, parent, controller):
         # Initialize super class
         tk.Frame.__init__(self, parent)
@@ -59,7 +64,7 @@ class StudyFrame(tk.Frame):
         self.status_frame.grid(sticky="we")
 
         self.index_card_image = tk.PhotoImage(master=self.top_frame, file='image/index_card.gif')
-        self.flashcard_label = tk.Label(self.top_frame, text="Load a flashcard", wraplength=350,
+        self.flashcard_label = tk.Label(self.top_frame, text="", wraplength=350,
                                         font=("Arial", 14, "bold"),
                                         image=self.index_card_image, compound=tk.CENTER)
         self.flashcard_label.grid(row=0, column=0, rowspan=6)
@@ -102,41 +107,33 @@ class StudyFrame(tk.Frame):
 
         # DEBUG: Load deck
         # self.load_deck(0)
-        self.load_flashcard()
-
-    def load_deck(self):
-        """
-        Prepares StudyFrame for studying a new deck. It resets the flashcard index to zero, sets the status bar,
-        and loads the first flashcard from the deck by calling necessary functions.
-        """
-        self.flashcard_index = 0
-        self.load_flashcard()
-        self.set_button_status()
+        self.prepare_view()
 
     def load_flashcard(self):
         deck = self.controller.database_manager.deck
         print("load_flashcard")
         print("self.flashcard_index: ", self.flashcard_index)
         # self.flashcard = self.flashcards[self.flashcard_index]
-        if self.flashcard_index < len(deck.flashcards):
-            flashcard = deck.flashcards[self.flashcard_index]
-            if self.flipped:
-                self.flashcard_label.config(fg="green")
-                self.flashcard_label.config(text=flashcard.answer)
-            else:
-                self.flashcard_label.config(fg="red")
-                self.flashcard_label.config(text=flashcard.question)
-            self.set_status_bar_text()
-        else:
-            print("Flashcard cannot be loaded because there is no flashcard.")
+        if deck is not None:
+            if self.flashcard_index < len(deck.flashcards):
+                flashcard = deck.flashcards[self.flashcard_index]
+                if self.flipped:
+                    self.flashcard_label.config(fg="green")
+                    self.flashcard_label.config(text=flashcard.answer)
+                else:
+                    self.flashcard_label.config(fg="red")
+                    self.flashcard_label.config(text=flashcard.question)
+                self.set_status_bar_text()
 
     def show_next_flashcard(self):
-        flashcards = self.controller.database_manager.deck.flashcards
-        self.flipped = False
-        self.flashcard_index += 1
-        self.load_flashcard()
-        print("self.flashcard_index: ", self.flashcard_index, "; len(flashcards): ", len(flashcards))
-        self.set_button_status()
+        deck = self.controller.database_manager.deck
+        if deck is not None:
+            flashcards = self.controller.database_manager.deck.flashcards
+            self.flipped = False
+            self.flashcard_index += 1
+            self.load_flashcard()
+            print("self.flashcard_index: ", self.flashcard_index, "; len(flashcards): ", len(flashcards))
+            self.set_button_status()
 
     def show_previous_flashcard(self):
         flashcards = self.controller.database_manager.deck.flashcards
@@ -167,7 +164,9 @@ class StudyFrame(tk.Frame):
     def status_bar_text(self):
         deck = self.controller.database_manager.deck
         if deck is None:
-            return "Please load a deck."
+            return StudyFrame.NO_DECK_FOUND_STATUS_TEXT
+        elif len(deck.flashcards) == 0:
+            return StudyFrame.NO_DECK_FOUND_STATUS_TEXT
         else:
             print()
             print("deck.title: ", deck.title)
@@ -175,3 +174,31 @@ class StudyFrame(tk.Frame):
                    " | Flashcard " + str(self.flashcard_index + 1) + " out of " + str(
                 len(deck.flashcards))
             return text
+
+    def prepare_view(self):
+        deck = self.controller.database_manager.deck
+        result = False
+        self.flashcard_index = 0
+        if deck is None:
+            self.next_button.config(state="disabled")
+            self.previous_button.config(state="disabled")
+            self.show_hide_button.config(state="disabled")
+            self.flashcard_label.config(text=StudyFrame.NO_DECK_FOUND_FLASHCARD_TEXT)
+            result = True
+        else:
+            if len(deck.flashcards) < 2:
+                self.next_button.config(state="disabled")
+                self.previous_button.config(state="disabled")
+            else:
+                self.next_button.config(state="enabled")
+                self.previous_button.config(state="enabled")
+
+            if len(deck.flashcards) < 1:
+                self.show_hide_button.config(state="disabled")
+                print("Flashcard cannot be loaded because there is no flashcard.")
+                self.flashcard_label.config(text=StudyFrame.NO_FLASHCARD_FOUND_TEXT)
+            else:
+                self.load_flashcard()
+                self.show_hide_button.config(state="enabled")
+        self.set_status_bar_text()
+        return result
