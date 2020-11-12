@@ -30,6 +30,7 @@ from Flashcard import Flashcard
 from Deck import Deck
 from StudyFrame import StudyFrame
 from ManageDecksFrame import ManageDecksFrame
+from DatabaseManager import DatabaseManager
 
 
 # Inherit from top level widget class (Tk) of tkinter module (tk)
@@ -49,9 +50,8 @@ class Program(tk.Tk):
 
         # self.title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="italic")
 
-        self.decks = self.create_dummy_deck()
-
-        self.deck : Deck = None
+        # This will be used all db operations.
+        self.database_manager = DatabaseManager()
 
         # # Create the main window widget
         # self.window_name = self.winfo_parent()
@@ -139,30 +139,6 @@ class Program(tk.Tk):
         print("show_frame will load the frame: ", frame_name)
         frame.tkraise()
 
-    def create_dummy_deck(self):
-        deck = Deck("USA capital cities")
-        deck.flashcards = self.create_dummy_flashcards1(deck)
-        decks = [deck]
-        deck = Deck("Network Ports")
-        deck.flashcards = self.create_dummy_flashcards2(deck)
-        decks.append(deck)
-        return decks
-
-    def create_dummy_flashcards1(self, deck):
-        flashcard1 = Flashcard("Capital of Texas?", "Austin", deck)
-        flashcard2 = Flashcard("Capital of California?", "Sacramento", deck)
-        flashcard3 = Flashcard("Capital of Washington?", "Olympia", deck)
-        flashcards = [flashcard1, flashcard2, flashcard3]
-        return flashcards
-
-    def create_dummy_flashcards2(self, deck):
-        flashcard1 = Flashcard("FTP", "20, 21", deck)
-        flashcard2 = Flashcard("SSH", "22", deck)
-        flashcard3 = Flashcard("Telnet", "23", deck)
-        flashcard4 = Flashcard("SMTP", "25", deck)
-        flashcards = [flashcard1, flashcard2, flashcard3, flashcard4]
-        return flashcards
-
     def center_window(self):
         # self.window.update()
 
@@ -204,9 +180,11 @@ class Program(tk.Tk):
     #     self.deck = self.decks[index]
 
     def open_deck(self, index):
-        self.frames["StudyFrame"].load_deck(index)
+        self.database_manager.load_deck(index)
+        self.frames["StudyFrame"].load_deck()
         self.show_frame("StudyFrame")
 
     def manage_flashcards(self):
         self.frames["ManageFlashcardsFrame"].load_deck()
         self.show_frame("ManageFlashcardsFrame")
+

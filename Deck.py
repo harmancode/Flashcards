@@ -24,6 +24,7 @@
 from Flashcard import Flashcard
 
 class Deck:
-    def __init__(self, title):
+    def __init__(self, deck_id, title):
+        self.deck_id = deck_id
         self.title = title
         self.flashcards: [Flashcard] = []

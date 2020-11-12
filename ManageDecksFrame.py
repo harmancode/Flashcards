@@ -41,13 +41,13 @@ class ManageDecksFrame(tk.Frame):
         self.treeview.heading("#1", text="Title", anchor="w",)
         self.treeview.heading("#2", text="Flashcards", anchor="e")
 
-        self.decks = self.controller.decks
         self.add_data_to_treeview()
 
         self.treeview.grid(padx=10, pady=10, sticky="nsew")
 
         # Select first row if there is any
-        if len(self.decks) > 0:
+        decks = self.controller.database_manager.decks
+        if len(decks) > 0:
             self.treeview.selection_set(0)
             self.treeview.focus(0)
 
@@ -95,8 +95,9 @@ class ManageDecksFrame(tk.Frame):
         new_title = tkinter.simpledialog.askstring(title = "New deck", prompt = "Please enter the title of the new deck:", initialvalue="")
         new_title = new_title.strip()
         if len(new_title) > 0:
-            new_deck = Deck(title=new_title)
-            self.decks.append(new_deck)
+            new_deck_id = self.controller.database_manager.add_new_deck_to_db(new_title)
+            new_deck = Deck(title=new_title, deck_id=new_deck_id)
+            self.controller.database_manager.decks.append(new_deck)
             self.refresh_treeview()
         else:
             tk.messagebox.showwarning("Info", "Title cannot be empty.")
@@ -133,7 +134,7 @@ class ManageDecksFrame(tk.Frame):
         pass
 
     def edit_flashcards(self):
-        self.controller.deck = self.selected_deck()
+        self.controller.database_manager.deck = self.selected_deck()
         self.controller.manage_flashcards()
 
     def open_deck(self):
@@ -151,6 +152,7 @@ class ManageDecksFrame(tk.Frame):
         selected_item = self.treeview.focus()
         # selected_item_dict = self.treeview.item(selected_item)
         index = self.treeview.index(selected_item)
+        print("selected_deck_index: ", index)
         return index
 
     def selected_deck_title(self):
@@ -162,17 +164,23 @@ class ManageDecksFrame(tk.Frame):
         return title
 
     def selected_deck(self):
-        return self.decks[self.selected_deck_index()]
+        selected_deck = self.controller.database_manager.decks[self.selected_deck_index()]
+        print("selected_deck: ", selected_deck.title)
+        print("selected_desk's flashcards:")
+        for flashcard in selected_deck.flashcards:
+            print(flashcard.flashcard_id, flashcard.deck_id, flashcard.question, flashcard.answer)
+        return selected_deck
 
     def selected_deck_flashcard_count(self):
         index = self.selected_deck_index()
-        count = len(self.decks[index].flashcards)
+        count = len(self.controller.database_manager.decks[index].flashcards)
         return count
 
     def add_data_to_treeview(self):
         # Add data to the treeview
-        deck_count = len(self.decks)
+        decks = self.controller.database_manager.decks
+        deck_count = len(decks)
         for index in range(deck_count):
-            title = self.decks[index].title
-            count = len(self.decks[index].flashcards)
+            title = decks[index].title
+            count = len(decks[index].flashcards)
             self.treeview.insert(parent='', index='end', iid=index, text="", values=(title, count))

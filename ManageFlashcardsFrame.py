@@ -7,9 +7,11 @@ import tkinter as tk
 class ManageFlashcardsFrame(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+
         self.controller = controller
-        self.deck = self.controller.deck
-        self.flashcards = self.deck.flashcards
+
+        # self.deck = self.controller.deck
+        # self.flashcards = self.deck.flashcards
         self.current_flashcard: Flashcard = None
 
         # self.deck_title_frame = tk.LabelFrame(self, text="Deck")
@@ -108,18 +110,18 @@ class ManageFlashcardsFrame(tk.Frame):
         self.load_deck()
 
     def load_deck(self):
-        self.deck = self.controller.deck
-        self.flashcards = self.deck.flashcards
-        deck_title_string = "Deck: " + self.deck.title
+        deck = self.controller.database_manager.deck
+        deck_title_string = "Deck: " + deck.title
         self.flashcards_frame.config(text=deck_title_string)
         self.refresh_treeview()
 
     def add_data_to_treeview(self):
         # Add data to the treeview
-        flashcards_count = len(self.flashcards)
+        flashcards = self.controller.database_manager.deck.flashcards
+        flashcards_count = len(flashcards)
         for index in range(flashcards_count):
-            question = self.flashcards[index].question
-            answer = self.flashcards[index].answer
+            question = flashcards[index].question
+            answer = flashcards[index].answer
             self.treeview.insert(parent='', index='end', iid=index, text="", values=(question, answer))
             self.select_first_flashcard()
 
@@ -140,14 +142,14 @@ class ManageFlashcardsFrame(tk.Frame):
 
     def select_first_flashcard(self):
         # Select first row if there is any
-        if len(self.flashcards) > 0:
+        if len(self.controller.database_manager.deck.flashcards) > 0:
             self.treeview.selection_set(0)
             self.treeview.focus(0)
             self.select_flashcard(0)
 
     def select_flashcard(self, index):
-        if self.flashcards[index] is not None:
-            self.current_flashcard = self.flashcards[index]
+        if self.controller.database_manager.deck.flashcards[index] is not None:
+            self.current_flashcard = self.controller.database_manager.deck.flashcards[index]
             self.question_entry.delete(0, tk.END)
             self.question_entry.insert(0, self.current_flashcard.question)
             self.answer_entry.delete(0, tk.END)

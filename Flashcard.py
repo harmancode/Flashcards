@@ -23,10 +23,11 @@
 
 class Flashcard:
 
-    def __init__(self, question, answer, parent_deck):
+    def __init__(self, flashcard_id, deck_id, question, answer):
+        self.flashcard_id = flashcard_id
+        self.deck_id = deck_id
         self.question = question
         self.answer = answer
-        self.parent_deck = parent_deck
 
     # def get_question(self):
     #     return self._Flashcard__question
