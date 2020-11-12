@@ -197,3 +197,6 @@ class ManageDecksFrame(tk.Frame):
             title = decks[index].title
             count = len(decks[index].flashcards)
             self.treeview.insert(parent='', index='end', iid=index, text="", values=(title, count))
+
+    def prepare_view(self):
+        self.refresh_treeview()

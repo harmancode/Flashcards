@@ -94,8 +94,8 @@ class ManageFlashcardsFrame(tk.Frame):
         self.answer_entry.grid(row=1, column=1, padx=10, pady=3, sticky="nsew")
 
         # Save Flashcard
-        self.save_flashcard = tk.Button(self.edit_flashcard_frame, text="Save flashcard", command=self.edit_flashcard)
-        self.save_flashcard.grid(row=0, column=2, rowspan=2, padx=10, pady=10, sticky="e")
+        self.save_flashcard_button = tk.Button(self.edit_flashcard_frame, text="Save flashcard", command=self.edit_flashcard)
+        self.save_flashcard_button.grid(row=0, column=2, rowspan=2, padx=10, pady=10, sticky="e")
 
         # Setup bottom frame
         self.bottom_frame = tk.Frame(self)
@@ -127,8 +127,19 @@ class ManageFlashcardsFrame(tk.Frame):
 
     def refresh_treeview(self):
         self.remove_all_data_from_treeview()
+        self.clean_entry_boxes()
         self.add_data_to_treeview()
         self.treeview.focus_set()
+
+        flashcards = self.controller.database_manager.deck.flashcards
+        if len(flashcards) > 0:
+            self.question_entry.config(state="normal")
+            self.answer_entry.config(state="normal")
+            self.save_flashcard_button.config(state="normal")
+        else:
+            self.question_entry.config(state="disabled")
+            self.answer_entry.config(state="disabled")
+            self.save_flashcard_button.config(state="disabled")
 
     def remove_all_data_from_treeview(self):
         # self.treeview.delete(*self.treeview.get_children())
@@ -137,7 +148,7 @@ class ManageFlashcardsFrame(tk.Frame):
 
     def index_of_last_selection_in_treeview(self):
         # https://stackoverflow.com/a/30615520/3780985
-        row_index = self.treeview.focus()
+        row_index = int(self.treeview.focus())
         print("item: ", self.treeview.item(row_index))
         return row_index
 
@@ -159,12 +170,20 @@ class ManageFlashcardsFrame(tk.Frame):
             self.treeview.focus(0)
             self.fill_entry_boxes_based_on_selected_row_index(0)
 
+    def select_last_flashcard_in_treeview(self):
+        # Select last flashcard item in treeview, i.e. give it focus
+        flashcards = self.controller.database_manager.deck.flashcards
+        count = len(flashcards)
+        if count > 0:
+            self.treeview.selection_set(count-1)
+            self.treeview.focus(count-1)
+            self.fill_entry_boxes_based_on_selected_row_index(count-1)
+
     def fill_entry_boxes_based_on_selected_row_index(self, index):
         if self.controller.database_manager.deck.flashcards[index] is not None:
             self.current_flashcard = self.controller.database_manager.deck.flashcards[index]
-            self.question_entry.delete(0, tk.END)
+            self.clean_entry_boxes()
             self.question_entry.insert(0, self.current_flashcard.question)
-            self.answer_entry.delete(0, tk.END)
             self.answer_entry.insert(0, self.current_flashcard.answer)
         else:
             print("There is not any flashcard at index", index)
@@ -202,6 +221,8 @@ class ManageFlashcardsFrame(tk.Frame):
                             add_another = tk.messagebox.askquestion("Add again?", "Flashcard has been added successfully. Would you like to add another flashcard?")
                             if add_another == "yes":
                                 add_flashcard = True
+                            else:
+                                self.select_last_flashcard_in_treeview()
 
                         else:
                             tk.messagebox.showwarning("Info", "Answer cannot be empty.")
@@ -213,8 +234,13 @@ class ManageFlashcardsFrame(tk.Frame):
         for flashcard in flashcards:
             self.controller.database_manager.delete_flashcard_from_db(flashcard.flashcard_id)
             self.controller.database_manager.deck.flashcards.remove(flashcard)
+        self.clean_entry_boxes()
         self.refresh_treeview()
         self.select_first_flashcard()
+
+    def clean_entry_boxes(self):
+        self.question_entry.delete(0, tk.END)
+        self.answer_entry.delete(0, tk.END)
 
     def edit_flashcard(self):
         selected_treeview_index = self.index_of_last_selection_in_treeview()
@@ -232,3 +258,7 @@ class ManageFlashcardsFrame(tk.Frame):
                                                                     question=question,
                                                                     answer=answer)
             self.refresh_treeview()
+
+    def prepare_view(self):
+        self.refresh_treeview()
+        self.select_first_flashcard()

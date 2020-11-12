@@ -138,8 +138,8 @@ class Program(tk.Tk):
         frame = self.frames[frame_name]
         frame_name = frame.__class__.__name__
         print("show_frame will load the frame: ", frame_name)
-        if isinstance(frame, StudyFrame):
-            frame.prepare_view()
+        # if isinstance(frame, StudyFrame):
+        frame.prepare_view()
         frame.tkraise()
 
     def center_window(self):
