@@ -124,11 +124,11 @@ class ManageFlashcardsFrame(tk.Frame):
             question = flashcards[index].question
             answer = flashcards[index].answer
             self.treeview.insert(parent='', index='end', iid=index, text="", values=(question, answer))
-            self.select_first_flashcard()
 
     def refresh_treeview(self):
         self.remove_all_data_from_treeview()
         self.add_data_to_treeview()
+        self.treeview.focus_set()
 
     def remove_all_data_from_treeview(self):
         # self.treeview.delete(*self.treeview.get_children())
@@ -166,33 +166,44 @@ class ManageFlashcardsFrame(tk.Frame):
         self.controller.show_frame("StudyFrame")
 
     def add_new_flashcard(self):
-        question = tk.simpledialog.askstring(title="New flashcard", prompt="Please enter the question:",
-                                                   initialvalue="")
-        if question is not None:
-            question = question.strip()
-            if len(question) > 0:
-                answer = tk.simpledialog.askstring(title="New flashcard", prompt="Please enter the answer:",
-                                                          initialvalue="")
-                if answer is not None:
-                    answer = answer.strip()
-                    if len(answer) > 0:
-                        deck_id = self.controller.database_manager.deck.deck_id
+        add_flashcard = True
+        while add_flashcard:
+            add_flashcard = False
 
-                        new_flashcard_id = self.controller.database_manager.add_new_flashcard_to_db(deck_id=deck_id,
-                                                                                                    question=question, answer=answer)
-                        new_flashcard = Flashcard(new_flashcard_id, deck_id, question, answer)
-                        self.controller.database_manager.deck.flashcards.append(new_flashcard)
-                        self.refresh_treeview()
-                    else:
-                        tk.messagebox.showwarning("Info", "Answer cannot be empty.")
-            else:
-                tk.messagebox.showwarning("Info", "Question cannot be empty.")
+            question = tk.simpledialog.askstring(title="New flashcard", prompt="Please enter the question:",
+                                                       initialvalue="")
+            if question is not None:
+                question = question.strip()
+                if len(question) > 0:
+                    answer = tk.simpledialog.askstring(title="New flashcard", prompt="Please enter the answer:",
+                                                              initialvalue="")
+                    if answer is not None:
+                        answer = answer.strip()
+                        if len(answer) > 0:
+                            deck_id = self.controller.database_manager.deck.deck_id
+
+                            new_flashcard_id = self.controller.database_manager.add_new_flashcard_to_db(deck_id=deck_id,
+                                                                                                        question=question, answer=answer)
+                            new_flashcard = Flashcard(new_flashcard_id, deck_id, question, answer)
+                            self.controller.database_manager.deck.flashcards.append(new_flashcard)
+                            self.refresh_treeview()
+
+                            add_another = tk.messagebox.askquestion("Add again?", "Flashcard has been added successfully. Would you like to add another flashcard?")
+                            if add_another == "yes":
+                                add_flashcard = True
+
+                        else:
+                            tk.messagebox.showwarning("Info", "Answer cannot be empty.")
+                else:
+                    tk.messagebox.showwarning("Info", "Question cannot be empty.")
 
     def remove_flashcard(self):
+        # todo: Remove multiple flashcards
         flashcard = self.controller.database_manager.deck.flashcards[self.selected_treeview_index()]
         self.controller.database_manager.delete_flashcard_from_db(flashcard.flashcard_id)
         self.controller.database_manager.deck.flashcards.remove(flashcard)
         self.refresh_treeview()
+        self.select_first_flashcard()
 
     def edit_flashcard(self):
         selected_treeview_index = self.selected_treeview_index()
@@ -210,6 +221,3 @@ class ManageFlashcardsFrame(tk.Frame):
                                                                     question=question,
                                                                     answer=answer)
             self.refresh_treeview()
-            # todo After rename, textbox are updated wrongly
-            self.treeview.selection_set(selected_treeview_index)
-            self.treeview.focus(selected_treeview_index)
