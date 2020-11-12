@@ -112,7 +112,7 @@ class ManageFlashcardsFrame(tk.Frame):
     def load_deck(self):
         deck = self.controller.database_manager.deck
         if deck is not None:
-            deck_title_string = "Deck: " + deck.title
+            deck_title_string = "Deck: " + deck.truncated_title()
             self.flashcards_frame.config(text=deck_title_string)
             self.refresh_treeview()
 
@@ -178,6 +178,14 @@ class ManageFlashcardsFrame(tk.Frame):
             self.treeview.selection_set(count-1)
             self.treeview.focus(count-1)
             self.fill_entry_boxes_based_on_selected_row_index(count-1)
+
+    def select_flashcard_at_index(self, index):
+        flashcards = self.controller.database_manager.deck.flashcards
+        count = len(flashcards)
+        if index <= count - 1:
+            self.treeview.selection_set(index)
+            self.treeview.focus(index)
+            self.fill_entry_boxes_based_on_selected_row_index(index)
 
     def fill_entry_boxes_based_on_selected_row_index(self, index):
         if self.controller.database_manager.deck.flashcards[index] is not None:
@@ -258,6 +266,7 @@ class ManageFlashcardsFrame(tk.Frame):
                                                                     question=question,
                                                                     answer=answer)
             self.refresh_treeview()
+            self.select_flashcard_at_index(selected_treeview_index)
 
     def prepare_view(self):
         self.refresh_treeview()

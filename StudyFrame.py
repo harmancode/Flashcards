@@ -170,7 +170,7 @@ class StudyFrame(tk.Frame):
         else:
             print()
             print("deck.title: ", deck.title)
-            text = "Deck: " + deck.title + \
+            text = "Deck: " + deck.truncated_title() + \
                    " | Flashcard " + str(self.flashcard_index + 1) + " out of " + str(
                 len(deck.flashcards))
             return text

@@ -11,6 +11,8 @@ except ImportError:
 
 class ManageDecksFrame(tk.Frame):
 
+    MAXIMUM_LENGTH_OF_DECK_TITLE = 250
+
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
 
@@ -95,6 +97,7 @@ class ManageDecksFrame(tk.Frame):
         new_title = tkinter.simpledialog.askstring(title = "New deck", prompt = "Please enter the title of the new deck:", initialvalue="")
         new_title = new_title.strip()
         if len(new_title) > 0:
+            new_title = new_title[:ManageDecksFrame.MAXIMUM_LENGTH_OF_DECK_TITLE]
             new_deck_id = self.controller.database_manager.add_new_deck_to_db(new_title)
             new_deck = Deck(title=new_title, deck_id=new_deck_id)
             self.controller.database_manager.decks.append(new_deck)
@@ -102,6 +105,7 @@ class ManageDecksFrame(tk.Frame):
             if len(self.controller.database_manager.decks) == 1:
                 self.controller.database_manager.set_current_deck_if_possible()
             self.refresh_treeview()
+            self.select_last_deck_in_treeview()
         else:
             tk.messagebox.showwarning("Info", "Title cannot be empty.")
 
@@ -139,12 +143,23 @@ class ManageDecksFrame(tk.Frame):
 
     def delete_deck(self):
         deck = self.controller.database_manager.decks[self.selected_treeview_index()]
-        self.controller.database_manager.delete_deck_from_db(deck.deck_id)
-        self.controller.database_manager.decks.remove(deck)
-        self.refresh_treeview()
-        # Assign a new deck as current deck, if current deck has just been deleted.
-        if self.controller.database_manager.deck.deck_id == deck.deck_id:
-            self.controller.database_manager.set_current_deck_if_possible()
+        flashcard_count = len(deck.flashcards)
+        confirmation_message = "This deck will be deleted: " + deck.title + "\n\n"
+        if flashcard_count == 0:
+            confirmation_message += "It does not contain any flashcards."
+        elif flashcard_count == 1:
+            confirmation_message += "It contains one flashcard. It will be deleted with the deck."
+        else:
+            confirmation_message += "It contains " + str(flashcard_count) + " flashcards. They will be deleted with the deck."
+        confirmation = tk.messagebox.askokcancel("Please confirm",
+                                                confirmation_message)
+        if confirmation:
+            self.controller.database_manager.delete_deck_from_db(deck.deck_id)
+            self.controller.database_manager.decks.remove(deck)
+            self.refresh_treeview()
+            # Assign a new deck as current deck, if current deck has just been deleted.
+            if self.controller.database_manager.deck.deck_id == deck.deck_id:
+                self.controller.database_manager.set_current_deck_if_possible()
 
     def edit_flashcards(self):
         self.controller.database_manager.deck = self.selected_deck()
@@ -198,5 +213,19 @@ class ManageDecksFrame(tk.Frame):
             count = len(decks[index].flashcards)
             self.treeview.insert(parent='', index='end', iid=index, text="", values=(title, count))
 
+    def select_first_deck(self):
+        if len(self.controller.database_manager.decks) > 0:
+            self.treeview.selection_set(0)
+            self.treeview.focus(0)
+
+    def select_last_deck_in_treeview(self):
+        # Select last flashcard item in treeview, i.e. give it focus
+        decks = self.controller.database_manager.decks
+        count = len(decks)
+        if count > 0:
+            self.treeview.selection_set(count - 1)
+            self.treeview.focus(count - 1)
+
     def prepare_view(self):
         self.refresh_treeview()
+        self.select_first_deck()

@@ -28,3 +28,9 @@ class Deck:
         self.deck_id = deck_id
         self.title = title
         self.flashcards: [Flashcard] = []
+
+    def truncated_title(self):
+        truncated_deck_title = self.title[:20]
+        if len(self.title) > 20:
+            truncated_deck_title += "..."
+        return truncated_deck_title
