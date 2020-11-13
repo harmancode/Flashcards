@@ -59,15 +59,15 @@ class StudyFrame(tk.Frame):
         self.bottom_frame = tk.Frame(self)
         self.status_frame = tk.Frame(self)
 
-        self.top_frame.grid()
-        self.bottom_frame.grid()
-        self.status_frame.grid(sticky="we")
+        self.top_frame.grid(row=0, column=0, pady=10, padx=10, sticky="nsew")
+        self.bottom_frame.grid(row=1, column=0, pady=10, padx=10, sticky="new")
+        self.status_frame.grid(row=2, column=0, pady=0, padx=10, sticky="new")
 
         self.index_card_image = tk.PhotoImage(master=self.top_frame, file='image/index_card.gif')
         self.flashcard_label = tk.Label(self.top_frame, text="", wraplength=350,
                                         font=("Arial", 14, "bold"),
                                         image=self.index_card_image, compound=tk.CENTER)
-        self.flashcard_label.grid(row=0, column=0, rowspan=6)
+        self.flashcard_label.grid(row=0, column=0)
 
         # Create three buttons for the bottom frame
         self.previous_button = tk.ttk.Button(self.bottom_frame, text='Previous',
@@ -78,9 +78,15 @@ class StudyFrame(tk.Frame):
         # self.show_hide_button.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER)
 
         # self.previous_button.pack(side='left')
-        self.previous_button.grid(row=0, column=0, padx=10, pady=5)
-        self.show_hide_button.grid(row=0, column=1, padx=10, pady=5)
-        self.next_button.grid(row=0, column=2, padx=10, pady=5)
+        self.previous_button.grid(row=0, column=1, padx=10, pady=5)
+        self.show_hide_button.grid(row=0, column=2, padx=10, pady=5)
+        self.next_button.grid(row=0, column=3, padx=10, pady=5)
+
+        # Center group of buttons horizontally by creating empty columns on the left and right side,
+        # and giving them a weight so that they consume all extra space
+        # https://stackoverflow.com/a/48934682/3780985
+        self.bottom_frame.grid_columnconfigure(0, weight=1)
+        self.bottom_frame.grid_columnconfigure(4, weight=1)
 
         # Create "Deck Table" as a TreeView
         # This object will be used to edit flashcards in the deck

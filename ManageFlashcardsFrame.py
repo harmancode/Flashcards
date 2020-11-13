@@ -21,11 +21,26 @@ class ManageFlashcardsFrame(tk.Frame):
         # self.deck_label.grid(row=0, column=0, padx=10, pady=10, sticky="w")
 
         self.flashcards_frame = tk.LabelFrame(self, text="Flashcards")
-        self.flashcards_frame.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
+        self.flashcards_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
         # Setup Treeview
-        self.treeview = tk.ttk.Treeview(self.flashcards_frame, columns=("Question", "Answer"))
+
+        # Create a new frame specific to Treeview and its scrollbar to easily use scrollbar in there
+        self.treeview_frame = tk.Frame(self.flashcards_frame)
+        self.treeview_frame.grid(row=0, column=0, pady=10, padx=10, sticky="nsew")
+
+        self.treeview = tk.ttk.Treeview(self.treeview_frame, columns=("Question", "Answer"))
         self.treeview.grid(row=0, column=0, sticky="nsew")
+
+        self.yscrollbar = tk.ttk.Scrollbar(self.treeview_frame, orient='vertical', command=self.treeview.yview)
+        self.treeview.configure(yscrollcommand=self.yscrollbar.set)
+
+        # self.treeview.grid(row=0, column=0, sticky="nsew")
+        self.yscrollbar.grid(row=0, column=1, sticky='nse')
+        self.yscrollbar.configure(command=self.treeview.yview)
+
+        self.treeview_frame.grid_rowconfigure(0, weight=1)
+        self.treeview_frame.grid_columnconfigure(0, weight=1)
 
         # Format columns
         # We set width as 0 because we will not use parent-children rows
@@ -41,8 +56,6 @@ class ManageFlashcardsFrame(tk.Frame):
         # Add binding to the treeview
         # self.treeview.bind("<Double-1>", self.row_selected)
         self.treeview.bind("<ButtonRelease-1>", self.row_selected)
-
-        self.treeview.grid(padx=10, pady=10, sticky="nsew")
 
         # # Add bottom frame
         # self.bottom_frame = tk.LabelFrame(self, text="Save")

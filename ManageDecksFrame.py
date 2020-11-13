@@ -27,10 +27,23 @@ class ManageDecksFrame(tk.Frame):
         self.select_deck_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
         # Setup Treeview
-        self.treeview = tk.ttk.Treeview(self.select_deck_frame, columns=("Title", "Flashcards"))
 
-        # Define columns
-        # self.treeview['columns'] = ("Question", "Answer")
+        # Create a new frame specific to Treeview and its scrollbar to easily use scrollbar in there
+        self.treeview_frame = tk.Frame(self.select_deck_frame)
+        self.treeview_frame.grid(row=0, column=0, pady=10, padx=10, sticky="nsew")
+
+        self.treeview = tk.ttk.Treeview(self.treeview_frame, columns=("Title", "Flashcards"))
+        self.treeview.grid(row=0, column=0, sticky="nsew")
+
+        self.yscrollbar = tk.ttk.Scrollbar(self.treeview_frame, orient='vertical', command=self.treeview.yview)
+        self.treeview.configure(yscrollcommand=self.yscrollbar.set)
+
+        # self.treeview.grid(row=0, column=0, sticky="nsew")
+        self.yscrollbar.grid(row=0, column=1, sticky='nse')
+        self.yscrollbar.configure(command=self.treeview.yview)
+
+        self.treeview_frame.grid_rowconfigure(0, weight=1)
+        self.treeview_frame.grid_columnconfigure(0, weight=1)
 
         # Format columns
         # We set width as 0 because we will not use parent-children rows
@@ -44,8 +57,6 @@ class ManageDecksFrame(tk.Frame):
         self.treeview.heading("#2", text="Flashcards", anchor="e")
 
         self.add_data_to_treeview()
-
-        self.treeview.grid(padx=10, pady=10, sticky="nsew")
 
         # Select first row if there is any
         decks = self.controller.database_manager.decks
