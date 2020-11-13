@@ -230,13 +230,13 @@ class Program(tk.Tk):
 
     def open_deck(self, index):
         try:
-            deck = self.controller.database_manager.deck
+            deck = self.database_manager.deck
             if hasattr(deck, "flashcards"):
                 self.database_manager.load_deck(index)
                 self.frames["StudyFrame"].prepare_view()
                 self.show_frame("StudyFrame")
-        except AttributeError:
-            tk.messagebox.showwarning("Info", "You should create a deck first.")
+        except Exception as error:
+            print(error)
 
     def manage_flashcards(self):
         self.frames["ManageFlashcardsFrame"].load_deck()

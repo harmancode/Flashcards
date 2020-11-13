@@ -7,7 +7,7 @@ except ImportError:
 
 from Deck import Deck
 from Flashcard import Flashcard
-
+import random
 
 class StudyFrame(tk.Frame):
 
@@ -36,6 +36,8 @@ class StudyFrame(tk.Frame):
 
         # Holds if card is flipped
         self.flipped = False
+
+        self.randomized_flashcards: [Flashcard] = None
 
         # # When object is initialized there is not any deck selected. Therefore deck index and flashcard index will be
         # # -1.
@@ -122,7 +124,8 @@ class StudyFrame(tk.Frame):
         # self.flashcard = self.flashcards[self.flashcard_index]
         if deck is not None:
             if self.flashcard_index < len(deck.flashcards):
-                flashcard = deck.flashcards[self.flashcard_index]
+                flashcard = self.randomized_flashcards[self.flashcard_index]
+                # flashcard = deck.flashcards[self.flashcard_index]
                 if self.flipped:
                     self.flashcard_label.config(fg="green")
                     self.flashcard_label.config(text=flashcard.answer)
@@ -134,7 +137,8 @@ class StudyFrame(tk.Frame):
     def show_next_flashcard(self):
         deck = self.controller.database_manager.deck
         if deck is not None:
-            flashcards = self.controller.database_manager.deck.flashcards
+            # flashcards = self.controller.database_manager.deck.flashcards
+            flashcards = self.randomized_flashcards
             self.flipped = False
             self.flashcard_index += 1
             self.load_flashcard()
@@ -142,7 +146,8 @@ class StudyFrame(tk.Frame):
             self.set_button_status()
 
     def show_previous_flashcard(self):
-        flashcards = self.controller.database_manager.deck.flashcards
+        # flashcards = self.controller.database_manager.deck.flashcards
+        flashcards = self.randomized_flashcards
         if self.flashcard_index != 0:
             self.flipped = False
             self.flashcard_index -= 1
@@ -155,7 +160,8 @@ class StudyFrame(tk.Frame):
             self.previous_button.config(state='disabled')
         else:
             self.previous_button.config(state='enabled')
-        if self.flashcard_index == len(self.controller.database_manager.deck.flashcards) - 1:
+        # if self.flashcard_index == len(self.controller.database_manager.deck.flashcards) - 1:
+        if self.flashcard_index == len(self.randomized_flashcards) - 1:
             self.next_button.config(state='disabled')
         else:
             self.next_button.config(state='enabled')
@@ -181,8 +187,19 @@ class StudyFrame(tk.Frame):
                 len(deck.flashcards))
             return text
 
+    def randomize_deck(self):
+        deck = self.controller.database_manager.deck
+        if deck is not None:
+            try:
+                self.randomized_flashcards = deck.flashcards
+                random.shuffle(self.randomized_flashcards)
+                # self.randomized_flashcards.shuffle()
+            except Exception as error:
+                print("Exception: ", error)
+
     def prepare_view(self):
         deck = self.controller.database_manager.deck
+        self.randomize_deck()
         result = False
         self.flashcard_index = 0
         if deck is None:
