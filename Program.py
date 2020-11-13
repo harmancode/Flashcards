@@ -110,7 +110,7 @@ class Program(tk.Tk):
         # Iterate through the "Frame classes", classes that inherits from tk.Frame
         for frame in (StudyFrame, ManageDecksFrame, ManageFlashcardsFrame):
             frame_name = frame.__name__
-            print("frame_name is", frame_name)
+            print("A new frame is being created; frame_name is", frame_name)
 
             # Initialize child frame with two parameters, parent and controller Parent is the container, an attribute
             # of the Program class, that will contain all frames Controller is the Program class itself. By passing
@@ -126,19 +126,52 @@ class Program(tk.Tk):
             # GUIs. We will only change the top Frame to change the view in the main window.
             frame.grid(row=0, column=0, sticky="nsew")
 
-        self.show_frame("StudyFrame")
-
         self.center_window()
+
+        self.show_frame("ManageDecksFrame")
 
         # Enter the tkinter main loop
         # self.mainloop()
 
     def show_frame(self, frame_name):
         # Show a frame for the given page name
+        deck = self.database_manager.deck
         frame = self.frames[frame_name]
-        frame_name = frame.__class__.__name__
-        print("show_frame will load the frame: ", frame_name)
-        # if isinstance(frame, StudyFrame):
+        # frame_name = frame.__class__.__name__
+        # print("show_frame will load the frame: ", frame_name)
+
+        if isinstance(frame, StudyFrame):
+            try:
+                if hasattr(deck, "flashcards"):
+                    if len(deck.flashcards) > 0:
+                        self.prepare_and_raise_frame(frame)
+                    else:
+                        tk.messagebox.showwarning("Info", "You should create some flashcards first.", icon="info")
+            except AttributeError:
+                tk.messagebox.showwarning("Info", "You should create a deck first.")
+
+        elif isinstance(frame, ManageFlashcardsFrame):
+            try:
+                if hasattr(deck, "flashcards"):
+                    self.prepare_and_raise_frame(frame)
+                else:
+                    tk.messagebox.showwarning("Info", "You should create some flashcards first.", icon="info")
+            except Exception as error:
+                print("Exception: ", error)
+
+        elif isinstance(frame, ManageDecksFrame):
+            if deck is None:
+                tk.messagebox.showwarning("Info", """
+                    Welcome to Flashcards!
+
+                    You can create decks of flashcards, and study them later to improve your knowledge and long-time memory.
+
+                    To start, click "Create" button below to create a new deck.
+                    """, icon='info')
+            else:
+                self.prepare_and_raise_frame(frame)
+
+    def prepare_and_raise_frame(self, frame):
         frame.prepare_view()
         frame.tkraise()
 
@@ -196,9 +229,14 @@ class Program(tk.Tk):
     #     self.deck = self.decks[index]
 
     def open_deck(self, index):
-        self.database_manager.load_deck(index)
-        self.frames["StudyFrame"].prepare_view()
-        self.show_frame("StudyFrame")
+        try:
+            deck = self.controller.database_manager.deck
+            if hasattr(deck, "flashcards"):
+                self.database_manager.load_deck(index)
+                self.frames["StudyFrame"].prepare_view()
+                self.show_frame("StudyFrame")
+        except AttributeError:
+            tk.messagebox.showwarning("Info", "You should create a deck first.")
 
     def manage_flashcards(self):
         self.frames["ManageFlashcardsFrame"].load_deck()

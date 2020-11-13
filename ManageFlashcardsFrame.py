@@ -39,14 +39,17 @@ class ManageFlashcardsFrame(tk.Frame):
         self.yscrollbar.grid(row=0, column=1, sticky='nse')
         self.yscrollbar.configure(command=self.treeview.yview)
 
-        self.treeview_frame.grid_rowconfigure(0, weight=1)
-        self.treeview_frame.grid_columnconfigure(0, weight=1)
+        # self.treeview_frame.grid_rowconfigure(0, weight=1)
+        # self.treeview_frame.grid_columnconfigure(0, weight=1)
 
         # Format columns
         # We set width as 0 because we will not use parent-children rows
         self.treeview.column("#0", width=0, minwidth=0)
-        self.treeview.column("#1", anchor="w", width="240")
+        # self.treeview.column("#1", anchor="w", width="240")
+        self.treeview.column("#1", anchor="w", width="364")
         self.treeview.column("#2", anchor="e", width="70")
+        # self.treeview.column("#1", anchor="w", width="376")
+        # self.treeview.column("#2", anchor="e", width="70")
 
         # Create headings to the columns
         self.treeview.heading("#0", text="")
@@ -66,22 +69,15 @@ class ManageFlashcardsFrame(tk.Frame):
         # self.save_button = tk.Button(self.bottom_frame, text="Save")
         # self.save_button.grid(row=0, column=0, padx=10)
 
-        # Add right frame for buttons
-        self.right_frame = tk.Frame(self)
-        self.right_frame.grid(row=0, column=1, rowspan=2, padx=10, pady=10, sticky="nsew")
+        # # Add right frame for buttons
+        # self.right_frame = tk.Frame(self)
+        # self.right_frame.grid(row=0, column=1, rowspan=2, padx=10, pady=10, sticky="nsew")
 
-        # Add buttons to right frame
-        self.add_flashcard_button = tk.Button(self.right_frame, text="Add new flashcard", command=self.add_new_flashcard)
-        self.add_flashcard_button.grid(row=0, column=0, pady=10, sticky="nsew")
-
-        self.remove_flashcard_button = tk.Button(self.right_frame, text="Remove flashcard", command=self.remove_flashcard)
-        self.remove_flashcard_button.grid(row=1, column=0, pady=10, sticky="nsew")
-
-        self.move_up_button = tk.Button(self.right_frame, text="Move up")
-        self.move_up_button.grid(row=2, column=0, pady=10, sticky="nsew")
-
-        self.move_down_button = tk.Button(self.right_frame, text="Move down")
-        self.move_down_button.grid(row=3, column=0, pady=10, sticky="nsew")
+        # self.move_up_button = tk.Button(self.right_frame, text="Move up")
+        # self.move_up_button.grid(row=2, column=0, pady=10, sticky="nsew")
+        #
+        # self.move_down_button = tk.Button(self.right_frame, text="Move down")
+        # self.move_down_button.grid(row=3, column=0, pady=10, sticky="nsew")
 
         # Add edit flashcard frame
         self.edit_flashcard_frame = tk.LabelFrame(self, text="Edit Flashcard")
@@ -97,14 +93,15 @@ class ManageFlashcardsFrame(tk.Frame):
 
         self.question_label = tk.Label(self.edit_flashcard_frame, text="Question:")
         self.question_label.grid(row=0, column=0, sticky="w")
+
         self.answer_label = tk.Label(self.edit_flashcard_frame, text="Answer:")
         self.answer_label.grid(row=1, column=0, sticky="w")
 
         self.question_entry = tk.Entry(self.edit_flashcard_frame)
-        self.question_entry.grid(row=0, column=1, padx=10, pady=3, sticky="nsew")
+        self.question_entry.grid(row=0, column=1, padx=10, pady=5, sticky="nsew")
 
         self.answer_entry = tk.Entry(self.edit_flashcard_frame)
-        self.answer_entry.grid(row=1, column=1, padx=10, pady=3, sticky="nsew")
+        self.answer_entry.grid(row=1, column=1, padx=10, pady=5, sticky="nsew")
 
         # Save Flashcard
         self.save_flashcard_button = tk.Button(self.edit_flashcard_frame, text="Save flashcard", command=self.edit_flashcard)
@@ -112,13 +109,31 @@ class ManageFlashcardsFrame(tk.Frame):
 
         # Setup bottom frame
         self.bottom_frame = tk.Frame(self)
-        self.bottom_frame.grid(row=2, column=0, columnspan=2, sticky="nsew")
+        self.bottom_frame.grid(row=2, column=0, sticky="nsew")
 
-        # This is required to center the button
+        # # # This is required to center the button
+        # self.bottom_frame.grid_columnconfigure(0, weight=1)
+
+        # Add buttons to bottom frame
+        self.add_flashcard_button = tk.Button(self.bottom_frame, text="Add flashcard", width=14,
+                                              command=self.add_new_flashcard)
+        self.add_flashcard_button.grid(row=0, column=1, padx=10, pady=10)
+
+        self.remove_flashcard_button = tk.Button(self.bottom_frame, text="Remove flashcard", width=14,
+                                                 command=self.remove_flashcard)
+        self.remove_flashcard_button.grid(row=0, column=3, padx=10, pady=10)
+
+        self.go_back_button = tk.Button(self.bottom_frame, text="Start studying", width=14, command=self.go_back)
+        self.go_back_button.grid(row=0, column=2, padx=10, pady=10)
+
+        # self.go_back_button = tk.Button(self.bottom_frame, text="Decks", width=8, command=self.go_back)
+        # self.go_back_button.grid(row=0, column=2, padx=10, pady=10)
+
+        # Center group of buttons horizontally by creating empty columns on the left and right side,
+        # and giving them a weight so that they consume all extra space
+        # https://stackoverflow.com/a/48934682/3780985
         self.bottom_frame.grid_columnconfigure(0, weight=1)
-
-        self.go_back_button = tk.Button(self.bottom_frame, text="Close", command=self.go_back)
-        self.go_back_button.grid(row=0, column=0, padx=10, pady=10)
+        self.bottom_frame.grid_columnconfigure(4, weight=1)
 
         self.load_deck()
 
@@ -131,12 +146,18 @@ class ManageFlashcardsFrame(tk.Frame):
 
     def add_data_to_treeview(self):
         # Add data to the treeview
-        flashcards = self.controller.database_manager.deck.flashcards
-        flashcards_count = len(flashcards)
-        for index in range(flashcards_count):
-            question = flashcards[index].question
-            answer = flashcards[index].answer
-            self.treeview.insert(parent='', index='end', iid=index, text="", values=(question, answer))
+        try:
+            deck = self.controller.database_manager.deck
+            if hasattr(deck, "flashcards"):
+                flashcards = self.controller.database_manager.deck.flashcards
+                flashcards_count = len(flashcards)
+                for index in range(flashcards_count):
+                    question = flashcards[index].question
+                    answer = flashcards[index].answer
+                    self.treeview.insert(parent='', index='end', iid=index, text="", values=(question, answer))
+        except AttributeError:
+            tk.messagebox.showwarning("Info", "You should create a deck first.")
+
 
     def refresh_treeview(self):
         self.remove_all_data_from_treeview()
@@ -211,7 +232,10 @@ class ManageFlashcardsFrame(tk.Frame):
 
     # Binding function
     def row_selected(self, event):
-        self.fill_entry_boxes_based_on_selected_row_index(self.index_of_last_selection_in_treeview())
+        try:
+            self.fill_entry_boxes_based_on_selected_row_index(self.index_of_last_selection_in_treeview())
+        except:
+            pass
 
     def go_back(self):
         self.controller.show_frame("StudyFrame")
