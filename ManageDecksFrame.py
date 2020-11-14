@@ -32,7 +32,7 @@ class ManageDecksFrame(tk.Frame):
         self.treeview_frame = tk.Frame(self.select_deck_frame)
         self.treeview_frame.grid(row=0, column=0, pady=10, padx=10, sticky="nsew")
 
-        self.treeview = tk.ttk.Treeview(self.treeview_frame, columns=("Title", "Flashcards"))
+        self.treeview = tk.ttk.Treeview(self.treeview_frame, columns=("Title", "Last Study", "Flashcards"))
         self.treeview.grid(row=0, column=0, sticky="nsew")
 
         self.yscrollbar = tk.ttk.Scrollbar(self.treeview_frame, orient='vertical', command=self.treeview.yview)
@@ -47,13 +47,15 @@ class ManageDecksFrame(tk.Frame):
         self.treeview.column("#0", width=0, minwidth=0)
         # self.treeview.column("#1", anchor="w")
         # self.treeview.column("#2", anchor="e")
-        self.treeview.column("#1", anchor="w", width="364")
+        self.treeview.column("#1", anchor="w", width="305")
         self.treeview.column("#2", anchor="e", width="70")
+        self.treeview.column("#3", anchor="e", width="70")
 
         # Create headings to the columns
         self.treeview.heading("#0", text="")
         self.treeview.heading("#1", text="Title", anchor="w",)
-        self.treeview.heading("#2", text="Flashcards", anchor="e")
+        self.treeview.heading("#2", text="Last Study", anchor="e")
+        self.treeview.heading("#3", text="Flashcards", anchor="e")
 
         self.add_data_to_treeview()
 
@@ -262,9 +264,11 @@ class ManageDecksFrame(tk.Frame):
         decks = self.controller.database_manager.decks
         deck_count = len(decks)
         for index in range(deck_count):
-            title = decks[index].title
-            count = len(decks[index].flashcards)
-            self.treeview.insert(parent='', index='end', iid=index, text="", values=(title, count))
+            deck = decks[index]
+            title = deck.title
+            count = len(deck.flashcards)
+            last_study = deck.last_study()
+            self.treeview.insert(parent='', index='end', iid=index, text="", values=(title, last_study, count))
 
     def select_first_deck(self):
         if len(self.controller.database_manager.decks) > 0:

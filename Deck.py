@@ -44,3 +44,8 @@ class Deck:
     def record_last_study_datetime(self, database_manager: DatabaseManager):
         self.last_study_datetime = datetime.now()
         database_manager.update_deck_in_db(self.deck_id, self.title, self.last_study_datetime)
+
+    def last_study(self):
+        # last_study_datetime_string = self.last_study_datetime.strftime("%m/%d/%Y, %H:%M")
+        last_study_datetime_string = self.last_study_datetime.strftime("%m/%d/%Y")
+        return last_study_datetime_string

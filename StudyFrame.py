@@ -181,12 +181,11 @@ class StudyFrame(tk.Frame):
             return StudyFrame.NO_DECK_FOUND_STATUS_TEXT
         else:
             print()
-            last_study_datetime_string = deck.last_study_datetime.strftime("%m/%d/%Y, %H:%M:%S")
-            print("deck.last_study_datetime: ", deck.last_study_datetime, " type: ", type(deck.last_study_datetime))
-            print("deck.title: ", deck.title)
+            # last_study_datetime_string = deck.last_study_datetime.strftime("%m/%d/%Y, %H:%M:%S")
+            # print("deck.last_study_datetime: ", deck.last_study_datetime, " type: ", type(deck.last_study_datetime))
+            # print("deck.title: ", deck.title)
             text = "Deck: " + deck.truncated_title() + \
-                   " | Flashcard " + str(self.flashcard_index + 1) + " out of " + str(
-                len(deck.flashcards)) + " | Last study session was at " + last_study_datetime_string
+                   " | Flashcard " + str(self.flashcard_index + 1) + " out of " + str(len(deck.flashcards))
             return text
 
     def randomize_deck(self):
