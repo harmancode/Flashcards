@@ -68,6 +68,7 @@ class Program(tk.Tk):
         # Set the app icon
         # Used https://www.favicon-generator.org/
         # To solve a bug, add r to this string. See: https://stackoverflow.com/q/55890931/3780985
+        # The r prefix specifies it as a raw string.
         self.iconbitmap(self, r"ico/favicon.ico")
 
         # Set title of the main window
@@ -169,6 +170,7 @@ class Program(tk.Tk):
                 print("Exception: ", error)
 
         elif isinstance(frame, ManageDecksFrame):
+            self.prepare_and_raise_frame(frame)
             if deck is None:
                 tk.messagebox.showwarning("Info", """
                     Welcome to Flashcards!
@@ -177,8 +179,6 @@ class Program(tk.Tk):
 
                     Click on the "New deck" button below to start.
                     """, icon='info')
-            else:
-                self.prepare_and_raise_frame(frame)
 
     def prepare_and_raise_frame(self, frame):
         frame.prepare_view()
@@ -243,6 +243,7 @@ class Program(tk.Tk):
             if hasattr(deck, "flashcards"):
                 self.database_manager.load_deck(index)
                 self.frames["StudyFrame"].prepare_view()
+                self.frames["StudyFrame"].start_study_session()
                 self.show_frame("StudyFrame")
             else:
                 print("No flashcards?")

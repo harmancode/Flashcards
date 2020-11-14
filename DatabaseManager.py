@@ -1,6 +1,6 @@
 import sqlite3
 import os
-from Deck import Deck
+import Deck
 from Flashcard import Flashcard
 
 
@@ -20,10 +20,10 @@ class DatabaseManager:
         self.cursor: sqlite3.Cursor = None
         self.provide_db()
 
-        self.decks: [Deck] = []
+        self.decks: [Deck.Deck] = []
 
         # Current deck will be held in this variable in a single place. This will be used in other classes too.
-        self.deck: Deck = None
+        self.deck: Deck.Deck = None
 
         # DEBUG
         # self.create_dummy_decks()
@@ -33,7 +33,9 @@ class DatabaseManager:
 
     def open_db(self):
         try:
-            self.db_connection = sqlite3.connect(DatabaseManager.DB_PATH)
+            # To parse date, see: https://pynative.com/python-sqlite-date-and-datetime/
+            self.db_connection = sqlite3.connect(DatabaseManager.DB_PATH,
+                                                 detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES)
             self.cursor = self.db_connection.cursor()
             # print("SQLite connection established.")
         except sqlite3.Error as error:
@@ -69,10 +71,13 @@ class DatabaseManager:
         try:
             cursor = self.db_connection.cursor()
 
+            # For timestamp affinity, see: https://www.sqlite.org/datatype3.html
+            # and https://pynative.com/python-sqlite-date-and-datetime/
             cursor.execute("""
             CREATE TABLE IF NOT EXISTS deck (
             deck_id INTEGER PRIMARY KEY, 
-            title TEXT NOT NULL )
+            title TEXT NOT NULL, 
+            last_study_datetime timestamp ) 
             """)
 
             cursor.execute("""
@@ -95,13 +100,13 @@ class DatabaseManager:
         record = self.cursor.fetchall()
         print("SQLite Database Version is: ", record)
 
-    def add_new_deck_to_db(self, deck_title):
+    def add_new_deck_to_db(self, deck_title, last_study_datetime):
         self.open_db()
-        deck_row_tuple = (deck_title,)
+        deck_row_tuple = (deck_title, last_study_datetime)
         # deck_id will be added by SQLite automatically because it is defined as INTEGER PRIMARY KEY.
         # For more info: https://www.sqlite.org/autoinc.html
-        sql = ''' INSERT INTO deck(title)
-                      VALUES(?) '''
+        sql = ''' INSERT INTO deck(title, last_study_datetime)
+                      VALUES(?, ?) '''
         self.cursor.execute(sql, deck_row_tuple)
         self.close_db()
         return self.cursor.lastrowid
@@ -125,8 +130,9 @@ class DatabaseManager:
         for deck in temp_decks:
             deck_id = deck[0]
             deck_title = deck[1]
-            print("Loaded deck ID:", deck_id, "title:", deck_title)
-            deck = Deck(deck_id, deck_title)
+            last_study_datetime = deck[2]
+            print("Loaded deck ID:", deck_id, "title:", deck_title, "Last study:", deck[2])
+            deck = Deck.Deck(deck_id, deck_title, last_study_datetime)
             self.decks.append(deck)
             self.load_flashcards(deck)
         self.close_db()
@@ -143,7 +149,8 @@ class DatabaseManager:
         deck.flashcards = []
         parameter = (deck.deck_id,)
         results = self.cursor.execute("SELECT * FROM flashcard WHERE deck_id == ?", parameter)
-        print("Deck: ", deck.title, " Loaded flashcards: ", results)
+        print("Deck title: ", deck.title, "Last study: ", deck.last_study_datetime)
+        print("Loaded flashcards: \n", results)
         for result in results:
             print(result)
             flashcard_id = result[0]
@@ -201,12 +208,13 @@ class DatabaseManager:
 
         deck.flashcards = [flashcard1, flashcard2, flashcard3, flashcard4]
 
-    def rename_deck_in_db(self, deck_id, title):
+    def update_deck_in_db(self, deck_id, title, last_study_datetime):
         self.open_db()
         self.db_connection.set_trace_callback(print)
-        deck_row_tuple = (title, int(deck_id))
+        deck_row_tuple = (title, last_study_datetime, int(deck_id))
         sql = ''' UPDATE deck
-                    SET title = ?
+                    SET title = ? , 
+                    last_study_datetime = ?
                     WHERE deck_id = ? '''
         self.cursor.execute(sql, deck_row_tuple)
         self.close_db()

@@ -22,19 +22,25 @@
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from Flashcard import Flashcard
+from DatabaseManager import DatabaseManager
+from datetime import datetime
 
 class Deck:
-    def __init__(self, deck_id, title):
+    def __init__(self, deck_id, title, last_study_datetime):
         self.deck_id = deck_id
         self.title = title
         self.flashcards: [Flashcard] = []
         # last_study_datetime will hold the last study date and time. For compatibility with SQlite3,
         # ISO8601 string format will be used as follows:
         # YYYY-MM-DD HH:MM:SS.SSS
-        self.last_study_datetime: str = ""
+        self.last_study_datetime = last_study_datetime
 
     def truncated_title(self):
         truncated_deck_title = self.title[:20]
         if len(self.title) > 20:
             truncated_deck_title += "..."
         return truncated_deck_title
+
+    def record_last_study_datetime(self, database_manager: DatabaseManager):
+        self.last_study_datetime = datetime.now()
+        database_manager.update_deck_in_db(self.deck_id, self.title, self.last_study_datetime)

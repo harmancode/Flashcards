@@ -181,10 +181,12 @@ class StudyFrame(tk.Frame):
             return StudyFrame.NO_DECK_FOUND_STATUS_TEXT
         else:
             print()
+            last_study_datetime_string = deck.last_study_datetime.strftime("%m/%d/%Y, %H:%M:%S")
+            print("deck.last_study_datetime: ", deck.last_study_datetime, " type: ", type(deck.last_study_datetime))
             print("deck.title: ", deck.title)
             text = "Deck: " + deck.truncated_title() + \
                    " | Flashcard " + str(self.flashcard_index + 1) + " out of " + str(
-                len(deck.flashcards))
+                len(deck.flashcards)) + " | Last study session was at " + last_study_datetime_string
             return text
 
     def randomize_deck(self):
@@ -225,3 +227,8 @@ class StudyFrame(tk.Frame):
                 self.show_hide_button.config(state="enabled")
         self.set_status_bar_text()
         return result
+
+    def start_study_session(self):
+        deck = self.controller.database_manager.deck
+        if deck is not None:
+            deck.record_last_study_datetime(self.controller.database_manager)

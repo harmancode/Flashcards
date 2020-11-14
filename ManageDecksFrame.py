@@ -125,8 +125,8 @@ class ManageDecksFrame(tk.Frame):
             new_title = new_title.strip()
             if len(new_title) > 0:
                 new_title = new_title[:ManageDecksFrame.MAXIMUM_LENGTH_OF_DECK_TITLE]
-                new_deck_id = self.controller.database_manager.add_new_deck_to_db(new_title)
-                new_deck = Deck(title=new_title, deck_id=new_deck_id)
+                new_deck_id = self.controller.database_manager.add_new_deck_to_db(new_title, None)
+                new_deck = Deck(title=new_title, deck_id=new_deck_id, last_study_datetime=None)
                 self.controller.database_manager.decks.append(new_deck)
                 # Set current deck when a new deck is added and count of decks was 0.
                 if len(self.controller.database_manager.decks) == 1:
@@ -152,7 +152,7 @@ class ManageDecksFrame(tk.Frame):
                 selected_index = self.selected_treeview_index()
 
                 deck.title = new_title
-                self.controller.database_manager.rename_deck_in_db(deck.deck_id, deck.title)
+                self.controller.database_manager.update_deck_in_db(deck.deck_id, deck.title)
 
                 self.refresh_treeview()
                 self.treeview.selection_set(selected_index)
