@@ -9,6 +9,9 @@ __pycache__/
 # db files
 *.db
 
+# csv files
+*.csv
+
 # PyCharm
 .idea
 

@@ -24,6 +24,7 @@
 import tkinter as tk
 from tkinter import font as tkfont
 import tkinter.ttk
+import tkinter.filedialog
 
 from ManageFlashcardsFrame import ManageFlashcardsFrame
 from Flashcard import Flashcard
@@ -31,6 +32,9 @@ from Deck import Deck
 from StudyFrame import StudyFrame
 from ManageDecksFrame import ManageDecksFrame
 from DatabaseManager import DatabaseManager
+from ImportExportManager import ImportExportManager
+# from tkinter.filedialog import askopenfilename
+# from tkinter.messagebox import showerror
 
 
 # Inherit from top level widget class (Tk) of tkinter module (tk)
@@ -41,7 +45,7 @@ from DatabaseManager import DatabaseManager
 class Program(tk.Tk):
 
     WINDOW_WIDTH = 510
-    WINDOW_HEIGHT = 466
+    WINDOW_HEIGHT = 442
     STUDYFRAME = "StudyFrame"
 
     def __init__(self, *args, **kwargs):
@@ -54,6 +58,8 @@ class Program(tk.Tk):
         # This will be used all db operations.
         self.database_manager = DatabaseManager()
 
+        self.import_export_manager = ImportExportManager(self.database_manager)
+
         # # Create the main window widget
         # self.window_name = self.winfo_parent()
         # print("self.window_name: ", self.window_name)
@@ -61,7 +67,8 @@ class Program(tk.Tk):
 
         # Set the app icon
         # Used https://www.favicon-generator.org/
-        self.iconbitmap("ico/favicon.ico")
+        # To solve a bug, add r to this string. See: https://stackoverflow.com/q/55890931/3780985
+        self.iconbitmap(self, r"ico/favicon.ico")
 
         # Set title of the main window
         self.title("Flashcards")
@@ -80,6 +87,8 @@ class Program(tk.Tk):
         self.menu_bar.add_cascade(label="Menu", menu=self.decks_menu)
         self.decks_menu.add_command(label="Decks...", command=self.manage_decks)
         self.decks_menu.add_command(label="Flashcards...", command=self.manage_flashcards)
+        self.decks_menu.add_separator()
+        self.decks_menu.add_command(label="Import deck as CSV file...", command=self.import_deck_as_csv)
         self.decks_menu.add_separator()
         self.decks_menu.add_command(label="Quit", command=self.quit)
 
@@ -146,7 +155,7 @@ class Program(tk.Tk):
                     if len(deck.flashcards) > 0:
                         self.prepare_and_raise_frame(frame)
                     else:
-                        tk.messagebox.showwarning("Info", "You should create some flashcards first.", icon="info")
+                        tk.messagebox.showwarning("Info", "You should add some flashcards first.", icon="info")
             except AttributeError:
                 tk.messagebox.showwarning("Info", "You should create a deck first.")
 
@@ -155,7 +164,7 @@ class Program(tk.Tk):
                 if hasattr(deck, "flashcards"):
                     self.prepare_and_raise_frame(frame)
                 else:
-                    tk.messagebox.showwarning("Info", "You should create some flashcards first.", icon="info")
+                    tk.messagebox.showwarning("Info", "You should add some flashcards first.", icon="info")
             except Exception as error:
                 print("Exception: ", error)
 
@@ -166,7 +175,7 @@ class Program(tk.Tk):
 
                     You can create decks of flashcards, and study them later to improve your knowledge and long-time memory.
 
-                    To start, click "Create" button below to create a new deck.
+                    Click on the "New deck" button below to start.
                     """, icon='info')
             else:
                 self.prepare_and_raise_frame(frame)
@@ -230,15 +239,32 @@ class Program(tk.Tk):
 
     def open_deck(self, index):
         try:
-            deck = self.database_manager.deck
+            deck = self.database_manager.decks[index]
             if hasattr(deck, "flashcards"):
                 self.database_manager.load_deck(index)
                 self.frames["StudyFrame"].prepare_view()
                 self.show_frame("StudyFrame")
+            else:
+                print("No flashcards?")
         except Exception as error:
-            print(error)
+            print("Exception: ", error)
 
     def manage_flashcards(self):
         self.frames["ManageFlashcardsFrame"].load_deck()
         self.show_frame("ManageFlashcardsFrame")
 
+    def import_deck_as_csv(self):
+        filename = tkinter.filedialog.askopenfilename(filetypes=(("CSV files", "*.csv"),
+                                           ("All files", "*.*")))
+        if filename:
+            try:
+                print("filename: ", filename)
+                result = self.import_export_manager.importfile(filename)
+                if result:
+                    self.frames["ManageDecksFrame"].prepare_view()
+                    tk.messagebox.showwarning("Info", "Import successful.", icon="info")
+                else:
+                    tk.messagebox.showwarning("Info", "Import failed.")
+            except:  # <- naked except is a bad idea
+                tk.messagebox.showerror("Open Source File", "Failed to read file\n'%s'" % filename)
+            return

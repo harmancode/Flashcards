@@ -28,6 +28,10 @@ class Deck:
         self.deck_id = deck_id
         self.title = title
         self.flashcards: [Flashcard] = []
+        # last_study_datetime will hold the last study date and time. For compatibility with SQlite3,
+        # ISO8601 string format will be used as follows:
+        # YYYY-MM-DD HH:MM:SS.SSS
+        self.last_study_datetime: str = ""
 
     def truncated_title(self):
         truncated_deck_title = self.title[:20]

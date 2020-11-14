@@ -81,7 +81,7 @@ class ManageDecksFrame(tk.Frame):
         self.open_deck_button = tk.Button(self.buttons_frame, text="Study", command=self.open_deck, width=9)
         self.rename_button = tk.Button(self.buttons_frame, text="Rename", command=self.rename_deck, width=9)
         self.delete_button = tk.Button(self.buttons_frame, text="Delete", command=self.delete_deck, width=9)
-        self.new_deck_button = tk.Button(self.buttons_frame, text="Create", command=self.new_deck, width=9)
+        self.new_deck_button = tk.Button(self.buttons_frame, text="New deck", command=self.new_deck, width=9)
         self.edit_deck_button = tk.Button(self.buttons_frame, text="Flashcards", command=self.edit_flashcards, width=9)
 
         # Place buttons
@@ -120,7 +120,7 @@ class ManageDecksFrame(tk.Frame):
         self.buttons_frame.grid_columnconfigure(6, weight=1)
 
     def new_deck(self):
-        new_title = tkinter.simpledialog.askstring(title = "New deck", prompt = "Please enter the title of the new deck:", initialvalue="")
+        new_title = tkinter.simpledialog.askstring(title = "New deck", prompt = "Please enter a title for the new deck:", initialvalue="")
         if new_title is not None:
             new_title = new_title.strip()
             if len(new_title) > 0:

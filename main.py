@@ -23,11 +23,9 @@
 
 from Program import Program
 
-
 def main():
     program = Program()
     program.mainloop()
-
 
 # Call the main function
 if __name__ == "__main__":
