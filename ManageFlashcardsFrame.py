@@ -1,8 +1,9 @@
-from Flashcard import Flashcard
-from Deck import Deck
 
 import tkinter as tk
+from datetime import datetime
 
+from Flashcard import Flashcard
+from Deck import Deck
 
 class ManageFlashcardsFrame(tk.Frame):
     def __init__(self, parent, controller):
@@ -123,7 +124,7 @@ class ManageFlashcardsFrame(tk.Frame):
                                                  command=self.remove_flashcard)
         self.remove_flashcard_button.grid(row=0, column=3, padx=10, pady=10)
 
-        self.go_back_button = tk.Button(self.bottom_frame, text="Start studying", width=14, command=self.go_back)
+        self.go_back_button = tk.Button(self.bottom_frame, text="Start studying", width=14, command=self.start_studying)
         self.go_back_button.grid(row=0, column=2, padx=10, pady=10)
 
         # self.go_back_button = tk.Button(self.bottom_frame, text="Decks", width=8, command=self.go_back)
@@ -237,8 +238,9 @@ class ManageFlashcardsFrame(tk.Frame):
         except:
             pass
 
-    def go_back(self):
-        self.controller.show_frame("StudyFrame")
+    def start_studying(self):
+        index = self.controller.database_manager.decks.index(self.controller.database_manager.deck)
+        self.controller.open_deck(index=index)
 
     def add_new_flashcard(self):
         add_flashcard = True
@@ -257,9 +259,14 @@ class ManageFlashcardsFrame(tk.Frame):
                         if len(answer) > 0:
                             deck_id = self.controller.database_manager.deck.deck_id
 
+                            due_date_string = self.controller.database_manager.today_as_string()
+
                             new_flashcard_id = self.controller.database_manager.add_new_flashcard_to_db(deck_id=deck_id,
-                                                                                                        question=question, answer=answer)
-                            new_flashcard = Flashcard(new_flashcard_id, deck_id, question, answer)
+                                                                                                        question=question,
+                                                                                                        answer=answer,
+                                                                                                        last_study_date=None,
+                                                                                                        due_date_string=due_date_string)
+                            new_flashcard = Flashcard(new_flashcard_id, deck_id, question, answer, 0, 0, 0)
                             self.controller.database_manager.deck.flashcards.append(new_flashcard)
                             self.refresh_treeview()
 
@@ -301,7 +308,13 @@ class ManageFlashcardsFrame(tk.Frame):
             flashcard.answer = answer
             self.controller.database_manager.update_flashcard_in_db(flashcard_id=flashcard.flashcard_id,
                                                                     question=question,
-                                                                    answer=answer)
+                                                                    answer=answer,
+                                                                    last_study_date=flashcard.last_study_date,
+                                                                    due_date_string=flashcard.due_date_string,
+                                                                    inter_repetition_interval=flashcard.inter_repetition_interval,
+                                                                    easiness_factor=flashcard.easiness_factor,
+                                                                    repetition_number=flashcard.repetition_number
+                                                                    )
             self.refresh_treeview()
             self.select_flashcard_at_index(selected_treeview_index)
 

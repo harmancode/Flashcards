@@ -21,15 +21,16 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from Flashcard import Flashcard
-from DatabaseManager import DatabaseManager
 from datetime import datetime
 
+from Flashcard import Flashcard
+
 class Deck:
-    def __init__(self, deck_id, title, last_study_datetime):
+    def __init__(self, deck_id, title, last_study_datetime=None):
         self.deck_id = deck_id
         self.title = title
         self.flashcards: [Flashcard] = []
+        self.due_flashcards: [Flashcard] = []
         # last_study_datetime will hold the last study date and time. For compatibility with SQlite3,
         # ISO8601 string format will be used as follows:
         # YYYY-MM-DD HH:MM:SS.SSS
@@ -41,11 +42,19 @@ class Deck:
             truncated_deck_title += "..."
         return truncated_deck_title
 
-    def record_last_study_datetime(self, database_manager: DatabaseManager):
-        self.last_study_datetime = datetime.now()
+    def record_last_study_datetime(self, database_manager):
         database_manager.update_deck_in_db(self.deck_id, self.title, self.last_study_datetime)
 
-    def last_study(self):
+    def set_last_study(self, database_manager):
+        self.last_study_datetime = datetime.now()
+        self.record_last_study_datetime(database_manager)
+
+    def get_last_study(self):
         # last_study_datetime_string = self.last_study_datetime.strftime("%m/%d/%Y, %H:%M")
-        last_study_datetime_string = self.last_study_datetime.strftime("%m/%d/%Y")
+        last_study_datetime_string = ""
+        if self.last_study_datetime is not None:
+            last_study_datetime_string = self.last_study_datetime.strftime("%m/%d/%Y")
         return last_study_datetime_string
+
+    def set_due_flashcards(self, database_manager):
+        database_manager.load_due_flashcards(self)

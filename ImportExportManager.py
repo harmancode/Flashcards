@@ -1,8 +1,10 @@
 import csv
+from time import localtime, strftime
+
 from Deck import Deck
 from Flashcard import Flashcard
 from DatabaseManager import DatabaseManager
-from time import localtime, strftime
+
 
 class ImportExportManager:
 
@@ -73,8 +75,9 @@ class ImportExportManager:
                 for item in listdict:
                     print("item[0]: ", item[0])
                     print("item[1]: ", item[1])
-                    new_flashcard_id = self.database_manager.add_new_flashcard_to_db(new_deck_id,item[0],item[1])
-                    new_flashcard = Flashcard(new_flashcard_id,new_deck_id,item[0],item[1])
+                    today_as_string = self.database_manager.today_as_string()
+                    new_flashcard_id = self.database_manager.add_new_flashcard_to_db(new_deck_id, item[0], item[1], last_study_date=None, due_date_string=today_as_string)
+                    new_flashcard = Flashcard(new_flashcard_id, new_deck_id, item[0], item[1])
                     new_deck.flashcards.append(new_flashcard)
 
                 return True

@@ -1,3 +1,6 @@
+import random
+from datetime import datetime
+
 try:
     import tkinter as tk  # python 3
     from tkinter import font as tkfont  # python 3
@@ -5,9 +8,7 @@ except ImportError:
     import Tkinter as tk  # python 2
     import tkFont as tkfont  # python 2
 
-from Deck import Deck
 from Flashcard import Flashcard
-import random
 
 class StudyFrame(tk.Frame):
 
@@ -34,8 +35,13 @@ class StudyFrame(tk.Frame):
         # Holds the current flashcard's index in the flashcards list
         self.flashcard_index = int()
 
+        # Holds displayed flashcard object
+        self.flashcard = None
+
         # Holds if card is flipped
         self.flipped = False
+
+        self.show_only_due_flashcards = True
 
         self.randomized_flashcards: [Flashcard] = None
 
@@ -72,23 +78,36 @@ class StudyFrame(tk.Frame):
         self.flashcard_label.grid(row=0, column=0)
 
         # Create three buttons for the bottom frame
-        self.previous_button = tk.ttk.Button(self.bottom_frame, text='Previous',
-                                             command=self.show_previous_flashcard)
-        self.show_hide_button = tk.ttk.Button(self.bottom_frame, text='Flip', command=self.flip)
-        self.next_button = tk.ttk.Button(self.bottom_frame, text='Next', command=self.show_next_flashcard)
+        self.very_hard_button = tk.ttk.Button(self.bottom_frame, text='Very Hard',
+                                         command=self.very_hard_button_clicked)
+        self.hard_button = tk.ttk.Button(self.bottom_frame, text='Hard',
+                                         command=self.hard_button_clicked)
+        self.normal_button = tk.ttk.Button(self.bottom_frame, text='Show Answer',
+                                         command=self.flip)
+        self.easy_button = tk.ttk.Button(self.bottom_frame, text='Easy',
+                                         command=self.easy_button_clicked)
+        self.super_easy_button = tk.ttk.Button(self.bottom_frame, text='Super Easy',
+                                         command=self.super_easy_button_clicked)
+
+        # self.left_button = tk.ttk.Button(self.bottom_frame, text='Previous',
+        #                                  command=self.show_previous_flashcard)
+        # self.show_hide_button = tk.ttk.Button(self.bottom_frame, text='Flip', command=self.flip)
+        # self.right_button = tk.ttk.Button(self.bottom_frame, text='Next', command=self.show_next_flashcard)
 
         # self.show_hide_button.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER)
 
-        # self.previous_button.pack(side='left')
-        self.previous_button.grid(row=0, column=1, padx=10, pady=5)
-        self.show_hide_button.grid(row=0, column=2, padx=10, pady=5)
-        self.next_button.grid(row=0, column=3, padx=10, pady=5)
+        # self.left_button.pack(side='left')
+        self.very_hard_button.grid(row=0, column=1, padx=10, pady=5)
+        self.hard_button.grid(row=0, column=2, padx=10, pady=5)
+        self.normal_button.grid(row=0, column=3, padx=10, pady=5)
+        self.easy_button.grid(row=0, column=4, padx=10, pady=5)
+        self.super_easy_button.grid(row=0, column=5, padx=10, pady=5)
 
         # Center group of buttons horizontally by creating empty columns on the left and right side,
         # and giving them a weight so that they consume all extra space
         # https://stackoverflow.com/a/48934682/3780985
         self.bottom_frame.grid_columnconfigure(0, weight=1)
-        self.bottom_frame.grid_columnconfigure(4, weight=1)
+        self.bottom_frame.grid_columnconfigure(6, weight=1)
 
         # Create "Deck Table" as a TreeView
         # This object will be used to edit flashcards in the deck
@@ -115,7 +134,7 @@ class StudyFrame(tk.Frame):
 
         # DEBUG: Load deck
         # self.load_deck(0)
-        self.prepare_view()
+        self.prepare_view(show_only_due_flashcards=True)
 
     def load_flashcard(self):
         deck = self.controller.database_manager.deck
@@ -123,12 +142,14 @@ class StudyFrame(tk.Frame):
         print("self.flashcard_index: ", self.flashcard_index)
         # self.flashcard = self.flashcards[self.flashcard_index]
         if deck is not None:
-            if self.flashcard_index < len(deck.flashcards):
+            if self.flashcard_index < len(self.randomized_flashcards):
                 flashcard = self.randomized_flashcards[self.flashcard_index]
+                self.flashcard = flashcard
                 # flashcard = deck.flashcards[self.flashcard_index]
                 if self.flipped:
                     self.flashcard_label.config(fg="green")
                     self.flashcard_label.config(text=flashcard.answer)
+                    # todo
                 else:
                     self.flashcard_label.config(fg="red")
                     self.flashcard_label.config(text=flashcard.question)
@@ -137,13 +158,18 @@ class StudyFrame(tk.Frame):
     def show_next_flashcard(self):
         deck = self.controller.database_manager.deck
         if deck is not None:
-            # flashcards = self.controller.database_manager.deck.flashcards
-            flashcards = self.randomized_flashcards
-            self.flipped = False
-            self.flashcard_index += 1
-            self.load_flashcard()
-            print("self.flashcard_index: ", self.flashcard_index, "; len(flashcards): ", len(flashcards))
-            self.set_button_status()
+            if self.flashcard_index < len(self.randomized_flashcards) - 1:
+                # flashcards = self.controller.database_manager.deck.flashcards
+                flashcards = self.randomized_flashcards
+                self.flipped = False
+                self.flashcard_index += 1
+                self.load_flashcard()
+                self.configure_buttons()
+                print("self.flashcard_index: ", self.flashcard_index, "; len(flashcards): ", len(flashcards))
+                # self.set_button_status()
+            else:
+                tk.messagebox.showinfo("All done!", "All done! Congrats!")
+                self.controller.show_manage_decks_frame()
 
     def show_previous_flashcard(self):
         # flashcards = self.controller.database_manager.deck.flashcards
@@ -153,22 +179,66 @@ class StudyFrame(tk.Frame):
             self.flashcard_index -= 1
             self.load_flashcard()
             print("self.flashcard_index: ", self.flashcard_index, "; len(flashcards): ", len(flashcards))
-            self.set_button_status()
+            # self.set_button_status()
 
-    def set_button_status(self):
-        if self.flashcard_index == 0:
-            self.previous_button.config(state='disabled')
-        else:
-            self.previous_button.config(state='enabled')
-        # if self.flashcard_index == len(self.controller.database_manager.deck.flashcards) - 1:
-        if self.flashcard_index == len(self.randomized_flashcards) - 1:
-            self.next_button.config(state='disabled')
-        else:
-            self.next_button.config(state='enabled')
+    # def set_button_status(self):
+    #     if self.flashcard_index == 0:
+    #         self.left_button.config(state='disabled')
+    #     else:
+    #         self.left_button.config(state='enabled')
+    #     # if self.flashcard_index == len(self.controller.database_manager.deck.flashcards) - 1:
+    #     if self.flashcard_index == len(self.randomized_flashcards) - 1:
+    #         self.right_button.config(state='disabled')
+    #     else:
+    #         self.right_button.config(state='enabled')
+
+    # def flip(self):
+    #     self.flipped = not self.flipped
+    #     self.load_flashcard()
 
     def flip(self):
-        self.flipped = not self.flipped
-        self.load_flashcard()
+        if self.flipped:
+            # Answer has already been shown. Now this button acts for "Normal" button tapped.
+            self.normal_button_clicked()
+        else:
+            # Answer has not been shown before. Show the answer and toggle the flag.
+            self.flipped = True
+            self.load_flashcard()
+            self.configure_buttons()
+
+    def very_hard_button_clicked(self):
+        self.process_answer(grade=0)
+        self.show_next_flashcard()
+
+    def hard_button_clicked(self):
+        self.process_answer(grade=1)
+        self.show_next_flashcard()
+
+    def normal_button_clicked(self):
+        self.process_answer(grade=2)
+        self.show_next_flashcard()
+
+    def easy_button_clicked(self):
+        self.process_answer(grade=3)
+        self.show_next_flashcard()
+
+    def super_easy_button_clicked(self):
+        self.process_answer(grade=4)
+        self.show_next_flashcard()
+
+    def configure_buttons(self):
+        if self.flipped:
+            self.super_easy_button.grid()
+            self.easy_button.grid()
+            self.hard_button.grid()
+            self.very_hard_button.grid()
+            self.normal_button.config(text="Normal")
+        else:
+            self.super_easy_button.grid_remove()
+            self.easy_button.grid_remove()
+            self.hard_button.grid_remove()
+            self.very_hard_button.grid_remove()
+            self.normal_button.config(text="Show Answer")
 
     def set_status_bar_text(self):
         self.status_bar.config(text=self.status_bar_text())
@@ -184,50 +254,68 @@ class StudyFrame(tk.Frame):
             # last_study_datetime_string = deck.last_study_datetime.strftime("%m/%d/%Y, %H:%M:%S")
             # print("deck.last_study_datetime: ", deck.last_study_datetime, " type: ", type(deck.last_study_datetime))
             # print("deck.title: ", deck.title)
-            text = "Deck: " + deck.truncated_title() + \
-                   " | Flashcard " + str(self.flashcard_index + 1) + " out of " + str(len(deck.flashcards))
+            flashcard_count = ""
+            if self.randomized_flashcards is not None:
+                flashcard_count = len(self.randomized_flashcards)
+                text = "Deck: " + deck.truncated_title() + \
+                   " | Flashcard " + str(self.flashcard_index + 1) + " out of " + str(flashcard_count)
+            else:
+                text = ""
             return text
 
     def randomize_deck(self):
         deck = self.controller.database_manager.deck
+        flashcards = deck.flashcards
+        if self.show_only_due_flashcards:
+            flashcards = deck.due_flashcards
         if deck is not None:
             try:
-                self.randomized_flashcards = deck.flashcards
+                self.randomized_flashcards = flashcards
                 random.shuffle(self.randomized_flashcards)
                 # self.randomized_flashcards.shuffle()
             except Exception as error:
-                print("Exception: ", error)
+                print("Exception randomize_deck: ", error)
 
-    def prepare_view(self):
+    def prepare_view(self, show_only_due_flashcards):
+        self.show_only_due_flashcards = show_only_due_flashcards
         deck = self.controller.database_manager.deck
-        self.randomize_deck()
         result = False
         self.flashcard_index = 0
         if deck is None:
-            self.next_button.config(state="disabled")
-            self.previous_button.config(state="disabled")
-            self.show_hide_button.config(state="disabled")
+            # self.right_button.config(state="disabled")
+            # self.left_button.config(state="disabled")
+            self.normal_button.config(state="disabled")
             self.flashcard_label.config(text=StudyFrame.NO_DECK_FOUND_FLASHCARD_TEXT)
             result = True
         else:
+            deck.set_due_flashcards(self.controller.database_manager)
+            self.randomize_deck()
+            # todo clean
             if len(deck.flashcards) < 2:
-                self.next_button.config(state="disabled")
-                self.previous_button.config(state="disabled")
+                pass
+                # self.right_button.config(state="disabled")
+                # self.left_button.config(state="disabled")
             else:
-                self.next_button.config(state="enabled")
-                self.previous_button.config(state="enabled")
+                pass
+                # self.right_button.config(state="enabled")
+                # self.left_button.config(state="enabled")
 
             if len(deck.flashcards) < 1:
-                self.show_hide_button.config(state="disabled")
+                self.normal_button.config(state="disabled")
                 print("Flashcard cannot be loaded because there is no flashcard.")
                 self.flashcard_label.config(text=StudyFrame.NO_FLASHCARD_FOUND_TEXT)
             else:
                 self.load_flashcard()
-                self.show_hide_button.config(state="enabled")
+                self.normal_button.config(state="enabled")
         self.set_status_bar_text()
+        self.configure_buttons()
         return result
 
     def start_study_session(self):
         deck = self.controller.database_manager.deck
         if deck is not None:
-            deck.record_last_study_datetime(self.controller.database_manager)
+            deck.set_last_study(self.controller.database_manager)
+            self.flipped = False
+
+    def process_answer(self, grade):
+        self.flashcard.process_answer(grade=grade, database_manager=self.controller.database_manager)

@@ -22,17 +22,18 @@
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import tkinter as tk
-from tkinter import font as tkfont
 import tkinter.ttk
 import tkinter.filedialog
 
 from ManageFlashcardsFrame import ManageFlashcardsFrame
-from Flashcard import Flashcard
-from Deck import Deck
+# from Flashcard import Flashcard
+# from Deck import Deck
 from StudyFrame import StudyFrame
 from ManageDecksFrame import ManageDecksFrame
 from DatabaseManager import DatabaseManager
 from ImportExportManager import ImportExportManager
+
+
 # from tkinter.filedialog import askopenfilename
 # from tkinter.messagebox import showerror
 
@@ -43,10 +44,11 @@ from ImportExportManager import ImportExportManager
 #   https://stackoverflow.com/questions/7546050/switch-between-two-frames-in-tkinter/7557028#7557028
 #   https://stackoverflow.com/questions/48122796/tkinter-creating-multiple-frames-inside-a-frame-class
 class Program(tk.Tk):
-
     WINDOW_WIDTH = 510
     WINDOW_HEIGHT = 442
     STUDYFRAME = "StudyFrame"
+    DECKSFRAME = "ManageDecksFrame"
+    FLASHCARDSFRAME = "ManageFlashcardsFrame"
 
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
@@ -86,8 +88,8 @@ class Program(tk.Tk):
         # Create Decks menu
         self.decks_menu = tk.Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label="Menu", menu=self.decks_menu)
-        self.decks_menu.add_command(label="Decks...", command=self.manage_decks)
-        self.decks_menu.add_command(label="Flashcards...", command=self.manage_flashcards)
+        self.decks_menu.add_command(label="Decks...", command=self.show_manage_decks_frame)
+        self.decks_menu.add_command(label="Flashcards...", command=self.show_manage_flashcards_frame)
         self.decks_menu.add_separator()
         self.decks_menu.add_command(label="Import deck as CSV file...", command=self.import_deck_as_csv)
         self.decks_menu.add_separator()
@@ -138,51 +140,117 @@ class Program(tk.Tk):
 
         self.center_window()
 
-        self.show_frame("ManageDecksFrame")
+        self.show_manage_decks_frame()
 
         # Enter the tkinter main loop
         # self.mainloop()
 
-    def show_frame(self, frame_name):
-        # Show a frame for the given page name
-        deck = self.database_manager.deck
-        frame = self.frames[frame_name]
-        # frame_name = frame.__class__.__name__
-        # print("show_frame will load the frame: ", frame_name)
+    def open_deck(self, index):
+        try:
+            deck = self.database_manager.decks[index]
+            if deck is not None:
+                count = len(deck.flashcards)
+                due_count = len(deck.due_flashcards)
+                if count > 0:
+                    if due_count > 0:
+                        self.database_manager.load_deck(index)
+                        self.show_study_frame(show_only_due_flashcards=True)
+                        self.frames[Program.STUDYFRAME].start_study_session()
+                    else:
+                        confirmation = tk.messagebox.askokcancel("No due flashcard",
+                                                                 "There is no due flashcard. Would you like to go over all of them?",
+                                                                 icon="question")
+                        if confirmation:
+                            self.database_manager.load_deck(index)
+                            self.show_study_frame(show_only_due_flashcards=False)
+                            self.frames[Program.STUDYFRAME].start_study_session()
+                else:
+                    tk.messagebox.showwarning("Info",
+                                              "This deck is empty. Please add some flashcards to it first by clicking Flashcards button below.")
+            else:
+                tk.messagebox.showwarning("Info", "You should create a deck first.")
+        except Exception as error:
+            print("Exception in open deck: ", error)
 
+    def show_study_frame(self, show_only_due_flashcards=True):
+        deck = self.database_manager.deck
+        frame = self.frames[Program.STUDYFRAME]
         if isinstance(frame, StudyFrame):
             try:
                 if hasattr(deck, "flashcards"):
                     if len(deck.flashcards) > 0:
-                        self.prepare_and_raise_frame(frame)
+                        frame.prepare_view(show_only_due_flashcards=show_only_due_flashcards)
+                        frame.tkraise()
                     else:
                         tk.messagebox.showwarning("Info", "You should add some flashcards first.", icon="info")
             except AttributeError:
                 tk.messagebox.showwarning("Info", "You should create a deck first.")
 
-        elif isinstance(frame, ManageFlashcardsFrame):
+    def show_manage_decks_frame(self):
+        deck = self.database_manager.deck
+        frame = self.frames[Program.DECKSFRAME]
+        if isinstance(frame, ManageDecksFrame):
+            frame.prepare_view()
+            frame.tkraise()
+            if deck is None:
+                tk.messagebox.showwarning("Info", """
+                Welcome to Flashcards!
+
+                You can create decks of flashcards, and study them later to improve your knowledge and long-time memory.
+
+                Click on the "New deck" button below to start.
+                """, icon='info')
+
+    def show_manage_flashcards_frame(self):
+        deck = self.database_manager.deck
+        frame = self.frames[Program.FLASHCARDSFRAME]
+        if isinstance(frame, ManageFlashcardsFrame):
             try:
                 if hasattr(deck, "flashcards"):
-                    self.prepare_and_raise_frame(frame)
+                    frame.load_deck()
+                    frame.prepare_view()
+                    frame.tkraise()
                 else:
                     tk.messagebox.showwarning("Info", "You should add some flashcards first.", icon="info")
             except Exception as error:
                 print("Exception: ", error)
 
-        elif isinstance(frame, ManageDecksFrame):
-            self.prepare_and_raise_frame(frame)
-            if deck is None:
-                tk.messagebox.showwarning("Info", """
-                    Welcome to Flashcards!
-
-                    You can create decks of flashcards, and study them later to improve your knowledge and long-time memory.
-
-                    Click on the "New deck" button below to start.
-                    """, icon='info')
-
-    def prepare_and_raise_frame(self, frame):
-        frame.prepare_view()
-        frame.tkraise()
+    # def show_frame(self, frame_name):
+    #     # Show a frame for the given page name
+    #     deck = self.database_manager.deck
+    #     frame = self.frames[frame_name]
+    #     # frame_name = frame.__class__.__name__
+    #     # print("show_frame will load the frame: ", frame_name)
+    #
+    #     if isinstance(frame, StudyFrame):
+    #         try:
+    #             if hasattr(deck, "flashcards"):
+    #                 if len(deck.flashcards) > 0:
+    #                     self.prepare_and_raise_frame(frame)
+    #                 else:
+    #                     tk.messagebox.showwarning("Info", "You should add some flashcards first.", icon="info")
+    #         except AttributeError:
+    #             tk.messagebox.showwarning("Info", "You should create a deck first.")
+    #
+    #     elif isinstance(frame, ManageFlashcardsFrame):
+    #         try:
+    #             if hasattr(deck, "flashcards"):
+    #                 self.prepare_and_raise_frame(frame)
+    #             else:
+    #                 tk.messagebox.showwarning("Info", "You should add some flashcards first.", icon="info")
+    #         except Exception as error:
+    #             print("Exception: ", error)
+    #
+    #     elif isinstance(frame, ManageDecksFrame):
+    #         self.prepare_and_raise_frame(frame)
+    #         if deck is None:
+    #             tk.messagebox.showwarning("Info", """
+    #                 Welcome to Flashcards!
+    #
+    #                 You can create decks of flashcards, and study them later to improve your knowledge and long-time memory.
+    #
+    #                 Click on the "New deck" button below to start.
+    #                 """, icon='info')
 
     def center_window(self):
         # self.window.update()
@@ -214,10 +282,6 @@ class Program(tk.Tk):
         # self.window.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))
         self.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))
 
-
-    def manage_decks(self):
-        self.show_frame("ManageDecksFrame")
-
     def show_about_box(self):
         message_text = """
         Flashcards v0.1
@@ -234,29 +298,9 @@ class Program(tk.Tk):
         """
         tk.messagebox.showinfo(title="About Flashcards", message=message_text)
 
-    # def select_deck(self, index):
-    #     self.deck = self.decks[index]
-
-    def open_deck(self, index):
-        try:
-            deck = self.database_manager.decks[index]
-            if hasattr(deck, "flashcards"):
-                self.database_manager.load_deck(index)
-                self.frames["StudyFrame"].prepare_view()
-                self.frames["StudyFrame"].start_study_session()
-                self.show_frame("StudyFrame")
-            else:
-                print("No flashcards?")
-        except Exception as error:
-            print("Exception: ", error)
-
-    def manage_flashcards(self):
-        self.frames["ManageFlashcardsFrame"].load_deck()
-        self.show_frame("ManageFlashcardsFrame")
-
     def import_deck_as_csv(self):
         filename = tkinter.filedialog.askopenfilename(filetypes=(("CSV files", "*.csv"),
-                                           ("All files", "*.*")))
+                                                                 ("All files", "*.*")))
         if filename:
             try:
                 print("filename: ", filename)

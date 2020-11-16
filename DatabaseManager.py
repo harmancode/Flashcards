@@ -1,6 +1,8 @@
 import sqlite3
 import os
-import Deck
+from datetime import datetime
+
+from Deck import Deck
 from Flashcard import Flashcard
 
 
@@ -73,6 +75,8 @@ class DatabaseManager:
 
             # For timestamp affinity, see: https://www.sqlite.org/datatype3.html
             # and https://pynative.com/python-sqlite-date-and-datetime/
+            # About default converters:
+            # https://docs.python.org/3/library/sqlite3.html#default-adapters-and-converters
             cursor.execute("""
             CREATE TABLE IF NOT EXISTS deck (
             deck_id INTEGER PRIMARY KEY, 
@@ -86,6 +90,11 @@ class DatabaseManager:
             deck_id INTEGER NOT NULL, 
             question TEXT NOT NULL, 
             answer TEXT NOT NULL,
+            last_study_date timestamp, 
+            due_date_string TEXT,
+            inter_repetition_interval INTEGER,
+            easiness_factor REAL,
+            repetition_number INTEGER, 
             FOREIGN KEY (deck_id) REFERENCES deck (deck_id) )
             """)
 
@@ -100,7 +109,7 @@ class DatabaseManager:
         record = self.cursor.fetchall()
         print("SQLite Database Version is: ", record)
 
-    def add_new_deck_to_db(self, deck_title, last_study_datetime):
+    def add_new_deck_to_db(self, deck_title, last_study_datetime=None):
         self.open_db()
         deck_row_tuple = (deck_title, last_study_datetime)
         # deck_id will be added by SQLite automatically because it is defined as INTEGER PRIMARY KEY.
@@ -111,13 +120,22 @@ class DatabaseManager:
         self.close_db()
         return self.cursor.lastrowid
 
-    def add_new_flashcard_to_db(self, deck_id, question, answer):
+    def add_new_flashcard_to_db(self, deck_id, question, answer, last_study_date, due_date_string):
         self.open_db()
-        flashcard_row_tuple = (deck_id, question, answer)
-        sql = ''' INSERT INTO flashcard(deck_id, question, answer)
-                      VALUES(?,?,?) '''
+        inter_repetition_interval = 0
+        easiness_factor = 0
+        repetition_number = 0
+        flashcard_row_tuple = (deck_id, question, answer, last_study_date, due_date_string, inter_repetition_interval,
+                               easiness_factor, repetition_number)
+        sql = ''' INSERT INTO flashcard(deck_id, question, answer, last_study_date, due_date_string, inter_repetition_interval, 
+                               easiness_factor, repetition_number)
+                      VALUES(?,?,?,?,?,?,?,?) '''
         self.cursor.execute(sql, flashcard_row_tuple)
         self.close_db()
+
+        # todo debug
+        self.print_all_flashcards()
+
         return self.cursor.lastrowid
 
     def load_all_decks(self):
@@ -132,7 +150,7 @@ class DatabaseManager:
             deck_title = deck[1]
             last_study_datetime = deck[2]
             print("Loaded deck ID:", deck_id, "title:", deck_title, "Last study:", deck[2])
-            deck = Deck.Deck(deck_id, deck_title, last_study_datetime)
+            deck = Deck(deck_id, deck_title, last_study_datetime)
             self.decks.append(deck)
             self.load_flashcards(deck)
         self.close_db()
@@ -145,6 +163,9 @@ class DatabaseManager:
         self.load_flashcards(self.deck)
 
     def load_flashcards(self, deck):
+        # todo debug
+        self.print_all_flashcards()
+
         self.open_db()
         deck.flashcards = []
         parameter = (deck.deck_id,)
@@ -157,8 +178,55 @@ class DatabaseManager:
             deck_id = result[1]
             question = result[2]
             answer = result[3]
-            flashcard = Flashcard(flashcard_id, deck_id, question, answer)
+            last_study_date = result[4]
+            due_date_string = result[5]
+            inter_repetition_interval = result[6]
+            easiness_factor = result[7]
+            repetition_number = result[8]
+            print("Flashcard id:", flashcard_id, " deck id:", deck_id, " question:", question, " answer:", answer,
+                  " laststudy:", last_study_date, " due_date_string:", due_date_string, " inter_repetition_interval:",
+                  inter_repetition_interval, " easiness_factor:", easiness_factor, " repetition_number:", repetition_number)
+            flashcard = Flashcard(flashcard_id, deck_id, question, answer, inter_repetition_interval, easiness_factor, repetition_number)
+            print()
             deck.flashcards.append(flashcard)
+        # self.deck.flashcards =
+        self.close_db()
+
+    def today_as_string(self):
+        today = datetime.today()
+        return today.strftime('%Y-%m-%d')
+
+    def load_due_flashcards(self, deck):
+        self.open_db()
+        deck.due_flashcards = []
+        today_string = self.today_as_string()
+        parameter = (deck.deck_id, today_string)
+        results = self.cursor.execute("""
+                                    SELECT * 
+                                    FROM flashcard 
+                                    WHERE deck_id == ? AND
+                                    due_date_string <= ?
+                                        """, parameter)
+        print("Deck title: ", deck.title, "Last study: ", deck.last_study_datetime)
+        print("Loaded flashcards: \n", results)
+        for result in results:
+            print(result)
+            flashcard_id = result[0]
+            deck_id = result[1]
+            question = result[2]
+            answer = result[3]
+            last_study_date = result[4]
+            due_date = result[5]
+            inter_repetition_interval = result[6]
+            easiness_factor = result[7]
+            repetition_number = result[8]
+            print("Due Flashcard id:", flashcard_id, " deck id:", deck_id, " question:", question, " answer:", answer,
+                  " laststudy:", last_study_date, " last_study_date type:", type(last_study_date), " duedate:", due_date, " due_date type:", type(due_date), " inter_repetition_interval:",
+                  inter_repetition_interval, " easiness_factor:", easiness_factor, " repetition_number:",
+                  repetition_number)
+            flashcard = Flashcard(flashcard_id, deck_id, question, answer, inter_repetition_interval, easiness_factor,
+                                  repetition_number)
+            deck.due_flashcards.append(flashcard)
         # self.deck.flashcards =
         self.close_db()
 
@@ -219,13 +287,21 @@ class DatabaseManager:
         self.cursor.execute(sql, deck_row_tuple)
         self.close_db()
 
-    def update_flashcard_in_db(self, flashcard_id, question, answer):
+    def update_flashcard_in_db(self, flashcard_id, question, answer, last_study_date, due_date_string,
+                               inter_repetition_interval, easiness_factor, repetition_number):
         self.open_db()
         self.db_connection.set_trace_callback(print)
-        flashcard_row_tuple = (question, answer, int(flashcard_id))
+        flashcard_row_tuple = (question, answer, last_study_date, due_date_string,
+                               inter_repetition_interval, easiness_factor, repetition_number,
+                               int(flashcard_id))
         sql = ''' UPDATE flashcard
                             SET question = ? ,
-                                answer = ?
+                                answer = ?,
+                                last_study_date = ?, 
+                                due_date_string = ?,
+                                inter_repetition_interval = ?, 
+                                easiness_factor = ?, 
+                                repetition_number = ?
                             WHERE flashcard_id = ? '''
         self.cursor.execute(sql, flashcard_row_tuple)
         self.close_db()

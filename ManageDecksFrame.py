@@ -32,7 +32,7 @@ class ManageDecksFrame(tk.Frame):
         self.treeview_frame = tk.Frame(self.select_deck_frame)
         self.treeview_frame.grid(row=0, column=0, pady=10, padx=10, sticky="nsew")
 
-        self.treeview = tk.ttk.Treeview(self.treeview_frame, columns=("Title", "Last Study", "Flashcards"))
+        self.treeview = tk.ttk.Treeview(self.treeview_frame, columns=("Title", "Last Study", "Due", "Total"))
         self.treeview.grid(row=0, column=0, sticky="nsew")
 
         self.yscrollbar = tk.ttk.Scrollbar(self.treeview_frame, orient='vertical', command=self.treeview.yview)
@@ -47,15 +47,17 @@ class ManageDecksFrame(tk.Frame):
         self.treeview.column("#0", width=0, minwidth=0)
         # self.treeview.column("#1", anchor="w")
         # self.treeview.column("#2", anchor="e")
-        self.treeview.column("#1", anchor="w", width="305")
+        self.treeview.column("#1", anchor="w", width="235")
         self.treeview.column("#2", anchor="e", width="70")
         self.treeview.column("#3", anchor="e", width="70")
+        self.treeview.column("#4", anchor="e", width="70")
 
         # Create headings to the columns
         self.treeview.heading("#0", text="")
         self.treeview.heading("#1", text="Title", anchor="w",)
         self.treeview.heading("#2", text="Last Study", anchor="e")
-        self.treeview.heading("#3", text="Flashcards", anchor="e")
+        self.treeview.heading("#3", text="Due", anchor="e")
+        self.treeview.heading("#4", text="Total", anchor="e")
 
         self.add_data_to_treeview()
 
@@ -209,23 +211,29 @@ class ManageDecksFrame(tk.Frame):
         deck = self.selected_deck()
         if deck is not None:
             self.controller.database_manager.deck = deck
-            self.controller.manage_flashcards()
+            self.controller.show_manage_flashcards_frame()
         else:
             tk.messagebox.showwarning("Info", "You should create a deck first.")
 
     def open_deck(self):
-        selected_deck = self.selected_deck()
-        if selected_deck is not None:
-            count = len(selected_deck.flashcards)
-            if count > 0:
-                self.controller.open_deck(self.selected_treeview_index())
-            else:
-                tk.messagebox.showwarning("Info","This deck is empty. Please add some flashcards to it first by clicking Flashcards button below.")
-        else:
-            tk.messagebox.showwarning("Info", "You should create a deck first.")
-
-    def go_back(self):
-        self.controller.show_frame("StudyFrame")
+        self.controller.open_deck(self.selected_treeview_index())
+        # selected_deck = self.selected_deck()
+        # if selected_deck is not None:
+        #     count = len(selected_deck.flashcards)
+        #     due_count = len(selected_deck.due_flashcards)
+        #     if count > 0:
+        #         if due_count > 0:
+        #             self.controller.open_deck(self.selected_treeview_index(), show_only_due_flashcards=True)
+        #         else:
+        #             confirmation = tk.messagebox.askokcancel("No due flashcard",
+        #                                                      "There is no due flashcard. Would you like to go over all of them?",
+        #                                                      icon="question")
+        #             if confirmation:
+        #                 self.controller.open_deck(self.selected_treeview_index(), show_only_due_flashcards=False)
+        #     else:
+        #         tk.messagebox.showwarning("Info","This deck is empty. Please add some flashcards to it first by clicking Flashcards button below.")
+        # else:
+        #     tk.messagebox.showwarning("Info", "You should create a deck first.")
 
     def selected_treeview_index(self):
         selected_item = self.treeview.focus()
@@ -266,9 +274,11 @@ class ManageDecksFrame(tk.Frame):
         for index in range(deck_count):
             deck = decks[index]
             title = deck.title
-            count = len(deck.flashcards)
-            last_study = deck.last_study()
-            self.treeview.insert(parent='', index='end', iid=index, text="", values=(title, last_study, count))
+            deck.set_due_flashcards(self.controller.database_manager)
+            due_count = len(deck.due_flashcards)
+            total_count = len(deck.flashcards)
+            last_study = deck.get_last_study()
+            self.treeview.insert(parent='', index='end', iid=index, text="", values=(title, last_study, due_count, total_count))
 
     def select_first_deck(self):
         if len(self.controller.database_manager.decks) > 0:
