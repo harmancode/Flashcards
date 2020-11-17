@@ -104,10 +104,13 @@ class DatabaseManager:
             print("Error while creating tables", error)
 
     def print_db_version(self):
-        sqlite_select_query = "select sqlite_version();"
-        self.cursor.execute(sqlite_select_query)
-        record = self.cursor.fetchall()
-        print("SQLite Database Version is: ", record)
+        if self.cursor is not None:
+            sqlite_select_query = "select sqlite_version();"
+            self.cursor.execute(sqlite_select_query)
+            record = self.cursor.fetchall()
+            print("SQLite Database Version is: ", record)
+        else:
+            print("DEBUG: print_db_version failed because self.cursor is None.")
 
     def add_new_deck_to_db(self, deck_title, last_study_datetime=None):
         self.open_db()

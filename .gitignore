@@ -9,6 +9,9 @@ __pycache__/
 # db files
 *.db
 
+# other files and folders
+other/
+
 # csv files
 *.csv
 

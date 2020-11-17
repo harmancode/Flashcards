@@ -21,6 +21,9 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import sys
+import os
+
 import tkinter as tk
 import tkinter.ttk
 import tkinter.filedialog
@@ -33,7 +36,6 @@ from ManageDecksFrame import ManageDecksFrame
 from DatabaseManager import DatabaseManager
 from ImportExportManager import ImportExportManager
 
-
 # from tkinter.filedialog import askopenfilename
 # from tkinter.messagebox import showerror
 
@@ -43,6 +45,8 @@ from ImportExportManager import ImportExportManager
 #   https://stackoverflow.com/questions/34301300/tkinter-understanding-how-to-switch-frames
 #   https://stackoverflow.com/questions/7546050/switch-between-two-frames-in-tkinter/7557028#7557028
 #   https://stackoverflow.com/questions/48122796/tkinter-creating-multiple-frames-inside-a-frame-class
+
+
 class Program(tk.Tk):
     WINDOW_WIDTH = 510
     WINDOW_HEIGHT = 442
@@ -71,7 +75,9 @@ class Program(tk.Tk):
         # Used https://www.favicon-generator.org/
         # To solve a bug, add r to this string. See: https://stackoverflow.com/q/55890931/3780985
         # The r prefix specifies it as a raw string.
-        self.iconbitmap(self, r"ico/favicon.ico")
+        icon_path = self.resource_path(r"icon\favicon.ico")
+        # print("icon_path: ", icon_path)
+        self.iconbitmap(self, icon_path)
 
         # Set title of the main window
         self.title("Flashcards")
@@ -145,10 +151,21 @@ class Program(tk.Tk):
         # Enter the tkinter main loop
         # self.mainloop()
 
+    # Necessary to use data files with pyinstaller in onefile mode.
+    # https://stackoverflow.com/a/44352931/3780985
+    # https://stackoverflow.com/a/44438174/3780985
+    def resource_path(self, relative_path):
+        """ Get absolute path to resource, works for dev and for PyInstaller """
+        base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+        return os.path.join(base_path, relative_path)
+
+        return os.path.join(base_path, relative_path)
+
     def open_deck(self, index):
         try:
             deck = self.database_manager.decks[index]
             if deck is not None:
+                deck.set_due_flashcards(self.database_manager)
                 count = len(deck.flashcards)
                 due_count = len(deck.due_flashcards)
                 if count > 0:

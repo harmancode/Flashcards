@@ -71,7 +71,9 @@ class StudyFrame(tk.Frame):
         self.bottom_frame.grid(row=1, column=0, pady=10, padx=10, sticky="new")
         self.status_frame.grid(row=2, column=0, pady=0, padx=10, sticky="new")
 
-        self.index_card_image = tk.PhotoImage(master=self.top_frame, file='image/index_card.gif')
+        image_path = self.controller.resource_path("image\index_card.gif")
+        # print("image_path: ", image_path)
+        self.index_card_image = tk.PhotoImage(master=self.top_frame, file=image_path)
         self.flashcard_label = tk.Label(self.top_frame, text="", wraplength=350,
                                         font=("Arial", 14, "bold"),
                                         image=self.index_card_image, compound=tk.CENTER)
@@ -281,6 +283,7 @@ class StudyFrame(tk.Frame):
         deck = self.controller.database_manager.deck
         result = False
         self.flashcard_index = 0
+        self.flipped = False
         if deck is None:
             # self.right_button.config(state="disabled")
             # self.left_button.config(state="disabled")
@@ -316,6 +319,7 @@ class StudyFrame(tk.Frame):
         if deck is not None:
             deck.set_last_study(self.controller.database_manager)
             self.flipped = False
+            self.flashcard_index = 0
 
     def process_answer(self, grade):
         self.flashcard.process_answer(grade=grade, database_manager=self.controller.database_manager)
