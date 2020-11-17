@@ -156,7 +156,7 @@ class ManageDecksFrame(tk.Frame):
                 selected_index = self.selected_treeview_index()
 
                 deck.title = new_title
-                self.controller.database_manager.update_deck_in_db(deck.deck_id, deck.title)
+                self.controller.database_manager.update_deck_in_db(deck.deck_id, deck.title, deck.last_study_datetime)
 
                 self.refresh_treeview()
                 self.treeview.selection_set(selected_index)

@@ -156,6 +156,7 @@ class StudyFrame(tk.Frame):
                     self.flashcard_label.config(fg="red")
                     self.flashcard_label.config(text=flashcard.question)
                 self.set_status_bar_text()
+                self.normal_button.focus_set()
 
     def show_next_flashcard(self):
         deck = self.controller.database_manager.deck
