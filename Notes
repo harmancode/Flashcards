@@ -4,3 +4,187 @@ Create custom dialog box:
 https://effbot.org/tkinterbook/tkinter-dialog-windows.htm
 https://stackoverflow.com/questions/51604921/how-do-i-change-or-disable-the-default-sound-for-tkinter-message-boxes-in-python
 
+# Todo (2) Limit max length of strings in titles, questions, answers, etc.
+
+
+# Inherit from top level widget class (Tk) of tkinter module (tk)
+# For additional information:
+#   https://stackoverflow.com/questions/34301300/tkinter-understanding-how-to-switch-frames
+#   https://stackoverflow.com/questions/7546050/switch-between-two-frames-in-tkinter/7557028#7557028
+#   https://stackoverflow.com/questions/48122796/tkinter-creating-multiple-frames-inside-a-frame-class
+
+
+
+# This gives error: https://stackoverflow.com/questions/49317933/declare-stringvar-variable-as-class-variable-in-python
+# self.question_var = tk.StringVar(self)
+# self.answer_var = tk.StringVar(self)
+
+
+
+# print("controller.winfo_height(): ", controller.winfo_height())
+# print("controller.winfo_width(): ", controller.winfo_width())
+# print("self.winfo_width(): ", self.winfo_width())
+
+
+
+        # # Setup bottom frame
+        # self.bottom_frame = tk.Frame(self)
+        # self.bottom_frame.grid(row=1, column=0, columnspan=2, sticky="nsew")
+        #
+        # # This is required to center the button
+        # self.bottom_frame.grid_columnconfigure(0, weight=1)
+        #
+        # self.start_studying_button = tk.Button(self.bottom_frame, text="Go back", command=self.go_back)
+        # self.start_studying_button.grid(row=0, column=0, padx=10, pady=10)
+
+
+
+        # # Change value in treeview
+        # count = self.selected_deck_flashcard_count
+        # focused_index_string = str(self.selected_deck_index())
+        # self.treeview.delete(self.selected_deck_index())
+        # self.treeview.insert(parent='', index='end', iid=focused_index_string, text="", values=(new_title, count))
+        # # self.treeview.insert("", str(focused)[1:], values=("", new_title))
+        # # print("self.decks: ", self.decks)
+        # # print("self.controller.decks: ", self.controller.decks)
+
+
+    # def get_selected_deck_flashcard_count(self):
+    #     index = self.get_selected_treeview_index()
+    #     count = len(self.controller.database_manager.decks[index].flashcards)
+    #     return count
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        def write_test(self):
+        with open('names.csv', 'w', newline='') as csvfile:
+            fieldnames = ['first_name', 'last_name']
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+            writer.writeheader()
+            writer.writerow({'first_name': 'Baked', 'last_name': 'Beans'})
+            writer.writerow({'first_name': 'Lovely', 'last_name': 'Spam'})
+            writer.writerow({'first_name': 'Wonderful', 'last_name': 'Spam'})
+
+    # def read_test(self, filename):
+    #     print("read_test")
+    #     if filename == "":
+    #         filename = "names.csv"
+    #     with open(filename, newline='') as csvfile:
+    #         try:
+    #             reader = csv.DictReader(csvfile)
+    #             dictionary = dict()
+    #             for row in reader:
+    #                     print(row['key'], row['value'])
+    #                     dictionary[row['key']] = row['value']
+    #             print("dictionary['program']: ", dictionary['program'])
+    #             print("dictionary['decktitle']: ", dictionary['decktitle'])
+    #             print("dictionary['fileversion']: ", dictionary['fileversion'])
+    #             dictlist = list(dictionary.items())
+    #             print(dictlist[0][0])
+    #         except Exception as error:
+    #             print("Exception: ", error)
+
+
+
+
+    # def get_question(self):
+    #     return self._Flashcard__question
+    #
+    # def get_answer(self):
+    #     return self.__answer
+    #
+    # def get_parent_deck(self):
+    #     return self.__parent_deck
+    #
+    # def set_question(self, question):
+    #     self.__question = question
+    #
+    # def set_answer(self, answer):
+    #     self.__answer = answer
+    #
+    # def set_parent_deck(self, parent_deck):
+    #     self.__parent_deck = parent_deck
+
+
+
+
+
+        def create_dummy_decks(self):
+        deck_title = "USA capital cities"
+        deck_id = self.add_new_deck_to_db(deck_title)
+        deck = Deck(deck_id, deck_title)
+        self.decks.append(deck)
+
+        deck_title = "Network Ports"
+        deck_id = self.add_new_deck_to_db(deck_title)
+        deck = Deck(deck_id, deck_title)
+        self.decks.append(deck)
+
+        # return decks
+
+    def create_dummy_flashcards1(self, deck):
+        print("deck.deck_id:", deck.deck_id)
+        flashcard_id = self.add_new_flashcard_to_db(deck.deck_id, "Capital of Texas?", "Austin")
+        flashcard1 = Flashcard(flashcard_id, deck.deck_id, "Capital of Texas?", "Austin")
+
+        flashcard_id = self.add_new_flashcard_to_db(deck.deck_id, "Capital of California?", "Sacramento")
+        flashcard2 = Flashcard(flashcard_id, deck.deck_id, "Capital of California?", "Sacramento")
+
+        flashcard_id = self.add_new_flashcard_to_db(deck.deck_id, "Capital of Washington?", "Olympia")
+        flashcard3 = Flashcard(flashcard_id, deck.deck_id, "Capital of Washington?", "Olympia")
+
+        deck.flashcards = [flashcard1, flashcard2, flashcard3]
+
+    def create_dummy_flashcards2(self, deck):
+        question = "FTP"
+        answer = "20, 21"
+        flashcard_id = self.add_new_flashcard_to_db(deck.deck_id, question, answer)
+        flashcard1 = Flashcard(flashcard_id, deck.deck_id, question, answer)
+        question = "SSH"
+        answer = "22"
+        flashcard_id = self.add_new_flashcard_to_db(deck.deck_id, question, answer)
+        flashcard2 = Flashcard(flashcard_id, deck.deck_id, question, answer)
+        question = "Telnet"
+        answer = "23"
+        flashcard_id = self.add_new_flashcard_to_db(deck.deck_id, question, answer)
+        flashcard3 = Flashcard(flashcard_id, deck.deck_id, question, answer)
+        question = "SMTP"
+        answer = "25"
+        flashcard_id = self.add_new_flashcard_to_db(deck.deck_id, question, answer)
+        flashcard4 = Flashcard(flashcard_id, deck.deck_id, question, answer)
+
+        deck.flashcards = [flashcard1, flashcard2, flashcard3, flashcard4]
+
+
+
+        # # DEBUG
+        # try:
+        #     os.remove(DatabaseManager.DB_PATH)
+        # except:
+        #     print("Error in removing db file")
+
+
+
+
+        # To parse date, see: https://pynative.com/python-sqlite-date-and-datetime/
+
+
+
+
+            # For timestamp affinity, see: https://www.sqlite.org/datatype3.html
+            # and https://pynative.com/python-sqlite-date-and-datetime/
+            # About default converters:
+            # https://docs.python.org/3/library/sqlite3.html#default-adapters-and-converters

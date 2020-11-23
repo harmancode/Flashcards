@@ -1,3 +1,28 @@
+#   Program FlashCards
+#
+#   Copyright 2020 Ertugrul Harman
+#
+#       E-mail  : harmancode@gmail.com
+#       Twitter : https://twitter.com/harmancode
+#       Web     : https://harman.page
+#
+#   This file is part of Flashcards.
+#
+#   Flashcards is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+from typing import Optional
+
 from Deck import Deck
 
 try:
@@ -11,22 +36,24 @@ except ImportError:
 
 class ManageDecksFrame(tk.Frame):
 
-    MAXIMUM_LENGTH_OF_DECK_TITLE = 250
-
     def __init__(self, parent, controller):
+        """
+        ManageDecksFrame is the class that provides the view and controller for editing decks scene.
+        :param tk.Frame parent: Container frame in Program class that acts as the parent view, holding all the main views
+        (scenes) of the Program as child frames
+        :param Program.Program controller: Program class that acts as the parent controller, provides access to model methods
+        and properties.
+        """
         tk.Frame.__init__(self, parent)
 
+        # Provides direct access to the main controller (Program) and indirect access to the model (DatabaseManager).
         self.controller = controller
-
-        # print("controller.winfo_height(): ", controller.winfo_height())
-        # print("controller.winfo_width()", controller.winfo_width())
-        # print("self.winfo_width(): ", self.winfo_width())
 
         # Setup select deck frame
         self.select_deck_frame = tk.LabelFrame(self, text="Select deck")
         self.select_deck_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-        # Setup Treeview
+        # Set up Treeview
 
         # Create a new frame specific to Treeview and its scrollbar to easily use scrollbar in there
         self.treeview_frame = tk.Frame(self.select_deck_frame)
@@ -38,15 +65,12 @@ class ManageDecksFrame(tk.Frame):
         self.yscrollbar = tk.ttk.Scrollbar(self.treeview_frame, orient='vertical', command=self.treeview.yview)
         self.treeview.configure(yscrollcommand=self.yscrollbar.set)
 
-        # self.treeview.grid(row=0, column=0, sticky="nsew")
         self.yscrollbar.grid(row=0, column=1, sticky='nse')
         self.yscrollbar.configure(command=self.treeview.yview)
 
         # Format columns
         # We set width as 0 because we will not use parent-children rows
         self.treeview.column("#0", width=0, minwidth=0)
-        # self.treeview.column("#1", anchor="w")
-        # self.treeview.column("#2", anchor="e")
         self.treeview.column("#1", anchor="w", width="235")
         self.treeview.column("#2", anchor="e", width="70")
         self.treeview.column("#3", anchor="e", width="70")
@@ -54,11 +78,12 @@ class ManageDecksFrame(tk.Frame):
 
         # Create headings to the columns
         self.treeview.heading("#0", text="")
-        self.treeview.heading("#1", text="Title", anchor="w",)
+        self.treeview.heading("#1", text="Title", anchor="w", )
         self.treeview.heading("#2", text="Last Study", anchor="e")
         self.treeview.heading("#3", text="Due", anchor="e")
         self.treeview.heading("#4", text="Total", anchor="e")
 
+        # Fill treeview with data
         self.add_data_to_treeview()
 
         # Select first row if there is any
@@ -67,47 +92,31 @@ class ManageDecksFrame(tk.Frame):
             self.treeview.selection_set(0)
             self.treeview.focus(0)
 
-        # # Setup rename deck frame
-        # self.rename_deck_frame = tk.LabelFrame(self, text="Rename selected deck")
-        # self.deck_label = tk.Label(self.rename_deck_frame, text="Deck title: ")
-        # self.deck_label.grid(row=0, column=0, sticky="w")
-        # self.deck_title_textedit = tk.Entry(self.rename_deck_frame)
-        # self.deck_title_textedit.insert(0, self.controller.deck.title)
-        # self.deck_title_textedit.grid(row=0, column=1, sticky="nsew")
-        # self.rename_deck_frame.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
-        # self.rename_deck_frame.grid_columnconfigure(1, weight=1)
-        # # self.rename_deck_frame.pack(side="top", fill="both", expand=True)
-
-        # Setup buttons frame
+        # Set up buttons frame
         self.buttons_frame = tk.Frame(self)
         self.buttons_frame.grid(row=1, column=0, padx=10, pady=10, sticky="sew")
 
-        self.open_deck_button = tk.Button(self.buttons_frame, text="Study", command=self.open_deck, width=9)
+        self.study_button = tk.Button(self.buttons_frame, text="Study", command=self.switch_to_study_mode, width=9)
         self.rename_button = tk.Button(self.buttons_frame, text="Rename", command=self.rename_deck, width=9)
         self.delete_button = tk.Button(self.buttons_frame, text="Delete", command=self.delete_deck, width=9)
         self.new_deck_button = tk.Button(self.buttons_frame, text="New deck", command=self.new_deck, width=9)
-        self.edit_deck_button = tk.Button(self.buttons_frame, text="Flashcards", command=self.edit_flashcards, width=9)
+        self.edit_deck_button = tk.Button(self.buttons_frame, text="Flashcards",
+                                          command=self.show_manage_flashcards_frame, width=9)
 
         # Place buttons
-        self.open_deck_button.grid(row=0, column=1, padx=6, pady=10, sticky="nsew")
+        self.study_button.grid(row=0, column=1, padx=6, pady=10, sticky="nsew")
         self.edit_deck_button.grid(row=0, column=2, padx=6, pady=10, sticky="nsew")
         self.rename_button.grid(row=0, column=3, padx=6, pady=10, sticky="nsew")
         self.delete_button.grid(row=0, column=4, padx=6, pady=10, sticky="nsew")
         self.new_deck_button.grid(row=0, column=5, padx=6, pady=10, sticky="nsew")
 
+        # Give weights to the widgets
         self.set_weights()
 
-        # # Setup bottom frame
-        # self.bottom_frame = tk.Frame(self)
-        # self.bottom_frame.grid(row=1, column=0, columnspan=2, sticky="nsew")
-        #
-        # # This is required to center the button
-        # self.bottom_frame.grid_columnconfigure(0, weight=1)
-        #
-        # self.go_back_button = tk.Button(self.bottom_frame, text="Go back", command=self.go_back)
-        # self.go_back_button.grid(row=0, column=0, padx=10, pady=10)
-
-    def set_weights(self):
+    def set_weights(self) -> None:
+        """
+        Set weights of the visual elements to align them on the frame as intended.
+        """
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=0)
 
@@ -123,37 +132,73 @@ class ManageDecksFrame(tk.Frame):
         self.buttons_frame.grid_columnconfigure(0, weight=1)
         self.buttons_frame.grid_columnconfigure(6, weight=1)
 
-    def new_deck(self):
-        new_title = tkinter.simpledialog.askstring(title = "New deck", prompt = "Please enter a title for the new deck:", initialvalue="")
+    def new_deck(self) -> None:
+        """
+        Handles click event of New deck button. Strips it if given title length is too long. It initializes a new
+        Deck object, and adds it to the decks list. Also it saves it to the database permanently.
+        """
+
+        new_title = tkinter.simpledialog.askstring(title="New deck", prompt="Please enter a title for the new deck:",
+                                                   initialvalue="")
+
+        # Safety check
         if new_title is not None:
+
+            # Strip the given text first
             new_title = new_title.strip()
+
+            # Safety checks for given text
             if len(new_title) > 0:
-                new_title = new_title[:ManageDecksFrame.MAXIMUM_LENGTH_OF_DECK_TITLE]
+                if len(new_title) > Deck.MAXIMUM_LENGTH_OF_DECK_TITLE:
+                    tk.messagebox.showwarning("Too long title", "The title you typed was too long. It was shortened.")
+                new_title = new_title[:Deck.MAXIMUM_LENGTH_OF_DECK_TITLE]
+
+                # Add the new deck to the database and get a new deck id meanwhile
                 new_deck_id = self.controller.database_manager.add_new_deck_to_db(new_title, None)
+
+                # Initialize the new deck with the obtained id
                 new_deck = Deck(title=new_title, deck_id=new_deck_id, last_study_datetime=None)
+
+                # Add initialized object to the decks list
                 self.controller.database_manager.decks.append(new_deck)
-                # Set current deck when a new deck is added and count of decks was 0.
+
+                # Set newly added deck as the current deck, if it is the only deck.
                 if len(self.controller.database_manager.decks) == 1:
-                    self.controller.database_manager.set_current_deck_if_possible()
+                    self.controller.database_manager.set_first_deck_as_the_current_deck_if_possible()
+
+                # GUI tasks
                 self.refresh_treeview()
                 self.select_last_deck_in_treeview()
+
+                # For user's convenience
                 self.offer_to_create_flashcards()
             else:
                 tk.messagebox.showwarning("Info", "Title cannot be empty.")
 
-    def offer_to_create_flashcards(self):
-        deck = self.selected_deck()
+    def offer_to_create_flashcards(self) -> None:
+        """
+        Ask users if they want to create flashcards upon creating first (or only) deck, for their convenience.
+        """
+        deck = self.get_selected_deck()
         count_of_decks = len(self.controller.database_manager.decks)
         if (deck is not None) and (count_of_decks == 1):
-            tk.messagebox.showwarning("Info", "Now you have a deck. Good job! To create some flashcards for this deck, you can click Flashcards button below.", icon="info")
+            tk.messagebox.showwarning("Info",
+                                      "Now you have a deck. Good job! To create some flashcards for this deck, you can click Flashcards button below.",
+                                      icon="info")
 
-    def rename_deck(self):
-        deck = self.selected_deck()
+    def rename_deck(self) -> None:
+        """
+        Handles the click event of self.rename_button. Renames the deck selected in the treeview. Updates the data in
+        memory and in database.
+        """
+        deck = self.get_selected_deck()
         if deck is not None:
-            new_title = tkinter.simpledialog.askstring(title = "Rename deck", prompt = "Please enter new title of the deck:", initialvalue=self.selected_deck_title())
+            new_title = tkinter.simpledialog.askstring(title="Rename deck",
+                                                       prompt="Please enter new title of the deck:",
+                                                       initialvalue=self.get_selected_deck_title())
             if new_title is not None:
-                print(new_title)
-                selected_index = self.selected_treeview_index()
+                # print(new_title)
+                selected_index = self.get_selected_treeview_index()
 
                 deck.title = new_title
                 self.controller.database_manager.update_deck_in_db(deck.deck_id, deck.title, deck.last_study_datetime)
@@ -164,28 +209,27 @@ class ManageDecksFrame(tk.Frame):
         else:
             tk.messagebox.showwarning("Info", "You should create a deck first.")
 
-        # # Change value in treeview
-        # count = self.selected_deck_flashcard_count
-        # focused_index_string = str(self.selected_deck_index())
-        # self.treeview.delete(self.selected_deck_index())
-        # self.treeview.insert(parent='', index='end', iid=focused_index_string, text="", values=(new_title, count))
-        # # self.treeview.insert("", str(focused)[1:], values=("", new_title))
-        # # print("self.decks: ", self.decks)
-        # # print("self.controller.decks: ", self.controller.decks)
-
-    def refresh_treeview(self):
+    def refresh_treeview(self) -> None:
+        """
+        Removes all contents from the treeview and fills it again with the current data.
+        """
         self.remove_all_data_from_treeview()
         self.add_data_to_treeview()
 
-    def remove_all_data_from_treeview(self):
-        # self.treeview.delete(*self.treeview.get_children())
+    def remove_all_data_from_treeview(self) -> None:
+        """
+        Removes all the contents from the treeview.
+        """
         for i in self.treeview.get_children():
             self.treeview.delete(i)
 
-    def delete_deck(self):
+    def delete_deck(self) -> None:
+        """
+        Permanently deletes a deck from the memory and from the database.
+        """
         decks = self.controller.database_manager.decks
         if len(decks) > 0:
-            deck = decks[self.selected_treeview_index()]
+            deck = decks[self.get_selected_treeview_index()]
             flashcard_count = len(deck.flashcards)
             confirmation_message = "This deck will be deleted: " + deck.title + "\n\n"
             if flashcard_count == 0:
@@ -193,81 +237,93 @@ class ManageDecksFrame(tk.Frame):
             elif flashcard_count == 1:
                 confirmation_message += "It contains one flashcard. It will be deleted with the deck."
             else:
-                confirmation_message += "It contains " + str(flashcard_count) + " flashcards. They will be deleted with the deck."
+                confirmation_message += "It contains " + str(
+                    flashcard_count) + " flashcards. They will be deleted with the deck."
             # Icons in messagebox: https://stackoverflow.com/a/59344478/3780985
             confirmation = tk.messagebox.askokcancel("Please confirm",
-                                                    confirmation_message, icon="warning")
+                                                     confirmation_message, icon="warning")
             if confirmation:
+                # Delete the deck from the database
                 self.controller.database_manager.delete_deck_from_db(deck.deck_id)
+                # Remove the deck from the decks list, so that it can be removed from the memory
                 self.controller.database_manager.decks.remove(deck)
+                # Update view
                 self.refresh_treeview()
                 # Assign a new deck as current deck, if current deck has just been deleted.
                 if self.controller.database_manager.deck.deck_id == deck.deck_id:
-                    self.controller.database_manager.set_current_deck_if_possible()
+                    self.controller.database_manager.set_first_deck_as_the_current_deck_if_possible()
         else:
             tk.messagebox.showwarning("Info", "You should create a deck first.")
 
-    def edit_flashcards(self):
-        deck = self.selected_deck()
+    def show_manage_flashcards_frame(self) -> None:
+        """
+        Updates current deck based on the selection in treeview, and displays ManageFlashcardsFrame.
+        """
+        deck = self.get_selected_deck()
         if deck is not None:
             self.controller.database_manager.deck = deck
             self.controller.show_manage_flashcards_frame()
         else:
             tk.messagebox.showwarning("Info", "You should create a deck first.")
 
-    def open_deck(self):
-        self.controller.open_deck(self.selected_treeview_index())
-        # selected_deck = self.selected_deck()
-        # if selected_deck is not None:
-        #     count = len(selected_deck.flashcards)
-        #     due_count = len(selected_deck.due_flashcards)
-        #     if count > 0:
-        #         if due_count > 0:
-        #             self.controller.open_deck(self.selected_treeview_index(), show_only_due_flashcards=True)
-        #         else:
-        #             confirmation = tk.messagebox.askokcancel("No due flashcard",
-        #                                                      "There is no due flashcard. Would you like to go over all of them?",
-        #                                                      icon="question")
-        #             if confirmation:
-        #                 self.controller.open_deck(self.selected_treeview_index(), show_only_due_flashcards=False)
-        #     else:
-        #         tk.messagebox.showwarning("Info","This deck is empty. Please add some flashcards to it first by clicking Flashcards button below.")
-        # else:
-        #     tk.messagebox.showwarning("Info", "You should create a deck first.")
+    def switch_to_study_mode(self) -> None:
+        """
+        Brings StudyFrame to the front by calling controller's open_deck method with the index parameter which is
+        derived from the selected row in the treeview.
+        """
+        self.controller.open_deck(self.get_selected_treeview_index())
 
-    def selected_treeview_index(self):
+    def get_selected_treeview_index(self) -> int:
+        """
+        Gets the index of the selected row in the treeview
+        :return: int
+        """
         selected_item = self.treeview.focus()
         # selected_item_dict = self.treeview.item(selected_item)
         index = self.treeview.index(selected_item)
-        print("selected_deck_index: ", index)
-        return index
+        # print("selected_deck_index: ", index)
+        result = index
+        if (index < 0) or (index > (len(self.controller.database_manager.decks) - 1)):
+            print("Error: Invalid index in get_selected_treeview_index")
+            result = 0
+        return result
 
-    def selected_deck_title(self):
+    def get_selected_deck_title(self) -> str:
+        """
+        Returns the title of the deck that is delected in the treeview
+        :return: str
+        """
         selected_item = self.treeview.focus()
         selected_item_dict = self.treeview.item(selected_item)
         item_list = selected_item_dict["values"]
-        title = item_list[0]
-        print("title: ", title)
+        if len(item_list) > 0:
+            title = item_list[0]
+        else:
+            print("Error in get_selected_deck_title()")
+            title = ""
+        # print("title: ", title)
         return title
 
-    def selected_deck(self):
+    def get_selected_deck(self) -> Optional[Deck]:
+        """
+        Finds selected deck by using self.get_selected_treeview_index() and returns it.
+        :return: Deck | None
+        """
         result = None
         decks = self.controller.database_manager.decks
         if len(decks) > 0:
-            selected_deck = self.controller.database_manager.decks[self.selected_treeview_index()]
-            print("selected_deck: ", selected_deck.title)
-            print("selected_desk's flashcards:")
-            for flashcard in selected_deck.flashcards:
-                print(flashcard.flashcard_id, flashcard.deck_id, flashcard.question, flashcard.answer)
+            selected_deck = self.controller.database_manager.decks[self.get_selected_treeview_index()]
+            # print("selected_deck: ", selected_deck.title)
+            # print("selected_desk's flashcards:")
+            # for flashcard in selected_deck.flashcards:
+            #     print(flashcard.flashcard_id, flashcard.deck_id, flashcard.question, flashcard.answer)
             result = selected_deck
         return result
 
-    def selected_deck_flashcard_count(self):
-        index = self.selected_treeview_index()
-        count = len(self.controller.database_manager.decks[index].flashcards)
-        return count
-
-    def add_data_to_treeview(self):
+    def add_data_to_treeview(self) -> None:
+        """
+        Fills treeview with data derived from decks
+        """
         # Add data to the treeview
         decks = self.controller.database_manager.decks
         deck_count = len(decks)
@@ -277,15 +333,22 @@ class ManageDecksFrame(tk.Frame):
             deck.set_due_flashcards(self.controller.database_manager)
             due_count = len(deck.due_flashcards)
             total_count = len(deck.flashcards)
-            last_study = deck.get_last_study()
-            self.treeview.insert(parent='', index='end', iid=index, text="", values=(title, last_study, due_count, total_count))
+            last_study = deck.get_last_study_datetime_as_formatted_string()
+            self.treeview.insert(parent='', index='end', iid=index, text="",
+                                 values=(title, last_study, due_count, total_count))
 
-    def select_first_deck(self):
+    def select_first_row_in_treeview(self) -> None:
+        """
+        Selects first row in the treeview if there is any row.
+        """
         if len(self.controller.database_manager.decks) > 0:
             self.treeview.selection_set(0)
             self.treeview.focus(0)
 
-    def select_last_deck_in_treeview(self):
+    def select_last_deck_in_treeview(self) -> None:
+        """
+        Selects last row in the treeview if there is any row.
+        """
         # Select last flashcard item in treeview, i.e. give it focus
         decks = self.controller.database_manager.decks
         count = len(decks)
@@ -293,6 +356,10 @@ class ManageDecksFrame(tk.Frame):
             self.treeview.selection_set(count - 1)
             self.treeview.focus(count - 1)
 
-    def prepare_view(self):
+    def prepare_view(self) -> None:
+        """
+        Prepare the view before bringing it to the front (displaying it to the user), by refreshing the treeview and
+        selecting the first row in the treeview.
+        """
         self.refresh_treeview()
-        self.select_first_deck()
+        self.select_first_row_in_treeview()

@@ -2,9 +2,9 @@
 #
 #   Copyright 2020 Ertugrul Harman
 #
-#   Website     : harman.page
-#   Email (1)   : dev@harman.page
-#   Email (2)   : ertugrulharman@gmail.com
+#       E-mail  : harmancode@gmail.com
+#       Twitter : https://twitter.com/harmancode
+#       Web     : https://harman.page
 #
 #   This file is part of Flashcards.
 #

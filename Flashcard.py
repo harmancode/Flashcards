@@ -2,9 +2,9 @@
 #
 #   Copyright 2020 Ertugrul Harman
 #
-#   Website     : harman.page
-#   Email (1)   : dev@harman.page
-#   Email (2)   : ertugrulharman@gmail.com
+#       E-mail  : harmancode@gmail.com
+#       Twitter : https://twitter.com/harmancode
+#       Web     : https://harman.page
 #
 #   This file is part of Flashcards.
 #
@@ -22,36 +22,69 @@
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import datetime
-# from DatabaseManager import DatabaseManager
 
 
 class Flashcard:
+    MAX_LENGTH_OF_QUESTION = 500
+    MAX_LENGTH_OF_ANSWER = 500
 
-    def __init__(self, flashcard_id, deck_id, question, answer, inter_repetition_interval=0, easiness_factor=0, repetition_number=0):
+    def __init__(self,
+                 flashcard_id,
+                 deck_id,
+                 question,
+                 answer,
+                 last_study_date=None,
+                 due_date_string="",
+                 inter_repetition_interval=0,
+                 easiness_factor=0.0,
+                 repetition_number=0):
+        """
+        Flashcard class represents every flashcard item in a deck.
+        :param int flashcard_id: Unique identifier. Provided by the database. Minimum value is 0.
+        :param int deck_id: Unique identifier. Provided by the database. Minimum value is 0.
+        :param str question: Front side of the flashcard. Usually contains the question.
+        Length between 0 and MAX_LENGTH_OF_QUESTION
+        :param str answer: The bask side of the flashcard. Usually contains the answer of the question.
+        Length between 0 and MAX_LENGTH_OF_ANSWER.
+        :param datetime.datetime last_study_date: When this flashcard last studied.
+        :param str due_date_string: Due date of this flashcard as str.
+        :param int inter_repetition_interval: How many days program should wait before setting this flahcard due again.
+        Minimum value is 0.
+        :param float easiness_factor: Calculated based on the answers of the user by using the spaced-repetition
+        algorithm.
+        :param int repetition_number: How many times user has studied this flashcard. Minimum value is 0.
+        """
+
         self.flashcard_id = flashcard_id
         self.deck_id = deck_id
         self.question = question
         self.answer = answer
-        self.last_study_date: datetime.datetime = None
+        self.last_study_date: datetime.datetime = last_study_date
 
         # Use due_date attribute to determine due flashcards that user should work on
-        today = datetime.datetime.today()
-        self.due_date_string: today.strftime('%Y-%m-%d')
-
-        self.inter_repetition_interval = inter_repetition_interval
-        self.easiness_factor = easiness_factor
-        self.repetition_number = repetition_number
+        if due_date_string == "":
+            # There is no due date passed. Set it as today. Otherwise this flashcard won't be included in study
+            # sessions.
+            today = datetime.datetime.today()
+            self.due_date_string = today.strftime('%Y-%m-%d')
+        else:
+            # There is a due date passed. Assign it.
+            self.due_date_string = due_date_string
 
         # For SM-2 Algorithm
-        self.inter_repetition_interval = 0  # in days
-        self.easiness_factor = 0  # from 0 (hardest) to 4 (easiest)
-        self.repetition_number = 0  # how many times user solved this flashcard?
+        self.inter_repetition_interval = inter_repetition_interval      # in days
+        self.easiness_factor = easiness_factor                          # from 0 (hardest) to 4 (easiest)
+        self.repetition_number = repetition_number                      # how many times user solved this flashcard?
 
-    def set_inter_repetition_interval(self, grade):
-        # Parameter grade is a number between 0 (hardest) and 4 (easiest), indicating the difficulty
-        # level when solving the flashcard.
-        # Based on SM-2 Algorithm
-        # Explained here: https://en.wikipedia.org/wiki/SuperMemo#Description_of_SM-2_algorithm
+    def set_inter_repetition_interval(self, grade) -> None:
+        """
+        Parameter grade is a number between 0 (hardest) and 4 (easiest), indicating the difficulty
+        level when solving the flashcard.
+        Based on SM-2 Algorithm
+        Explained here: https://en.wikipedia.org/wiki/SuperMemo#Description_of_SM-2_algorithm
+        :param int grade: Between 0 and 4
+        """
+
         if self.repetition_number == 0:
             self.inter_repetition_interval = 1
         elif self.repetition_number == 1:
@@ -67,17 +100,36 @@ class Flashcard:
         if self.easiness_factor < 1.3:
             self.easiness_factor = 1.3
 
-    def set_last_study_date(self, database_manager):
+    def set_last_study_date(self, database_manager) -> None:
+        """
+        Set the self.last_study_datetime property and save to the database.
+        :param database_manager:
+        """
         self.last_study_datetime = datetime.datetime.now()
-        database_manager.update_flashcard_in_db(self.flashcard_id, self.question, self.answer, self.last_study_date,
-                                                self.due_date)
-    def set_due_date(self):
+        database_manager.update_flashcard_in_db(flashcard_id=self.flashcard_id,
+                                                question=self.question,
+                                                answer=self.answer,
+                                                last_study_date=self.last_study_date,
+                                                due_date_string=self.due_date_string,
+                                                inter_repetition_interval=self.inter_repetition_interval,
+                                                easiness_factor=self.easiness_factor,
+                                                repetition_number=self.repetition_number)
+
+    def set_due_date(self) -> None:
+        """
+        Set self.due_date_string attribute by adding the interval calculated by spaced-repetition algorithm.
+        """
         due_date = datetime.datetime.now() + datetime.timedelta(self.inter_repetition_interval)
         # today = datetime.datetime.today()
         self.due_date_string = due_date.strftime('%Y-%m-%d')
 
-    # Process user's answer to a flashcard, and set the due date as the final result
-    def process_answer(self, grade, database_manager):
+    def process_answer(self, grade, database_manager) -> None:
+        """
+        Process user's answer to a flashcard, and set the due date as the final result.
+        Update flashcard data in the database.
+        :param int grade: Between 0 and 4
+        :param DatabaseManager database_manager: DatabaseManager instance kept in the main controller (Program)
+        """
         self.last_study_date = datetime.datetime.now()
         self.set_inter_repetition_interval(grade)
         self.set_due_date()
@@ -89,21 +141,3 @@ class Flashcard:
                                                 self.inter_repetition_interval,
                                                 self.easiness_factor,
                                                 self.repetition_number)
-
-    # def get_question(self):
-    #     return self._Flashcard__question
-    #
-    # def get_answer(self):
-    #     return self.__answer
-    #
-    # def get_parent_deck(self):
-    #     return self.__parent_deck
-    #
-    # def set_question(self, question):
-    #     self.__question = question
-    #
-    # def set_answer(self, answer):
-    #     self.__answer = answer
-    #
-    # def set_parent_deck(self, parent_deck):
-    #     self.__parent_deck = parent_deck
