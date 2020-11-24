@@ -23,6 +23,8 @@
 
 import random
 
+from PIL import Image, ImageTk
+
 try:
     import tkinter as tk  # python 3
     from tkinter import font as tkfont  # python 3
@@ -88,14 +90,23 @@ class StudyFrame(tk.Frame):
         self.bottom_frame.grid(row=1, column=0, pady=10, padx=10, sticky="new")
         self.status_frame.grid(row=2, column=0, pady=0, padx=10, sticky="new")
 
-        image_path = self.controller.resource_path("image\index_card.gif")
-        # print("image_path: ", image_path)
-        self.index_card_image = tk.PhotoImage(master=self.top_frame, file=image_path)
+        question_image_path = self.controller.resource_path("image\index_card_for_question.png")
+        answer_image_path = self.controller.resource_path("image\index_card_for_answer.png")
+        # print("question_image_path: ", question_image_path)
+
+        try:
+            self.index_card_image_for_question = ImageTk.PhotoImage(master=self.top_frame, file=question_image_path)
+            self.index_card_image_for_answer = ImageTk.PhotoImage(master=self.top_frame, file=answer_image_path)
+            # self.index_card_image_for_question = tk.PhotoImage(master=self.top_frame, file=image_path)
+        except FileNotFoundError:
+            tk.messagebox.showwarning("Error", "Some files are missing. Please reinstall the program.")
+        except Exception as error:
+            tk.messagebox.showwarning("Error", "Error:" + error)
 
         # Configure flashcard text
         self.flashcard_label = tk.Label(self.top_frame, text="", wraplength=350,
                                         font=("Arial", 14, "bold"),
-                                        image=self.index_card_image, compound=tk.CENTER)
+                                        image=self.index_card_image_for_question, compound=tk.CENTER)
         self.flashcard_label.grid(row=0, column=0)
 
         # Create three buttons for the bottom frame
@@ -161,11 +172,13 @@ class StudyFrame(tk.Frame):
                 self.flashcard = flashcard
                 if self.flipped:
                     # Display the answer
-                    self.flashcard_label.config(fg="green")
+                    self.flashcard_label.config(fg="white")
+                    self.flashcard_label.config(image=self.index_card_image_for_answer)
                     self.flashcard_label.config(text=flashcard.answer)
                 else:
                     # Display the question
                     self.flashcard_label.config(fg="red")
+                    self.flashcard_label.config(image=self.index_card_image_for_question)
                     self.flashcard_label.config(text=flashcard.question)
                 self.set_status_bar_text()
                 # Give focus to the middle button in all cases
@@ -341,7 +354,7 @@ class StudyFrame(tk.Frame):
             # Check if there is a flashcard to be displayed for safety.
             if len(self.randomized_flashcards) < 1:
                 self.normal_button.config(state="disabled")
-                print("Flashcard cannot be loaded because there is no flashcard.")
+                # print("Flashcard cannot be loaded because there is no flashcard.")
                 self.flashcard_label.config(text=StudyFrame.NO_FLASHCARD_FOUND_TEXT)
             else:
                 # Load the first flashcard and set the "Show Answer" button enabled.
