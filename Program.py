@@ -36,7 +36,9 @@ from ImportExportManager import ImportExportManager
 
 
 class Program(tk.Tk):
-    # WINDOW_WIDTH = 600
+    # WINDOW_WIDTH = 510
+    # WINDOW_HEIGHT = 442
+
     WINDOW_WIDTH = 510
     WINDOW_HEIGHT = 442
     STUDYFRAME = "StudyFrame"

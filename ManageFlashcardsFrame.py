@@ -52,7 +52,7 @@ class ManageFlashcardsFrame(tk.Frame):
         self.treeview_frame.grid(row=0, column=0, pady=10, padx=10, sticky="nsew")
 
         self.treeview = tk.ttk.Treeview(self.treeview_frame, columns=("Question", "Answer"))
-        self.treeview.grid(row=0, column=0, sticky="nsew")
+        self.treeview.grid(row=0, column=0, pady=2, ipady=2, sticky="nsew")
 
         self.yscrollbar = tk.ttk.Scrollbar(self.treeview_frame, orient='vertical', command=self.treeview.yview)
         self.treeview.configure(yscrollcommand=self.yscrollbar.set)
@@ -64,7 +64,7 @@ class ManageFlashcardsFrame(tk.Frame):
         # We set width as 0 because we will not use parent-children rows
         self.treeview.column("#0", width=0, minwidth=0)
         self.treeview.column("#1", anchor="w", width="364")
-        self.treeview.column("#2", anchor="e", width="70")
+        self.treeview.column("#2", anchor="e", width="80")
 
         # Create headings to the columns
         self.treeview.heading("#0", text="")
@@ -76,28 +76,41 @@ class ManageFlashcardsFrame(tk.Frame):
 
         # Add edit flashcard frame
         self.edit_flashcard_frame = tk.LabelFrame(self, text="Edit Flashcard")
-        self.edit_flashcard_frame.grid(row=1, column=0, columnspan=2, padx=10, pady=10, sticky="nsew")
-
-        # Stretch the entry fields
-        self.edit_flashcard_frame.grid_columnconfigure(1, weight=6)
-        self.edit_flashcard_frame.grid_columnconfigure(2, weight=1)
+        self.edit_flashcard_frame.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 
         self.question_label = tk.Label(self.edit_flashcard_frame, text="Question:")
-        self.question_label.grid(row=0, column=0, sticky="w")
+        self.question_label.grid(row=0, rowspan=2, column=0, sticky="w")
 
         self.answer_label = tk.Label(self.edit_flashcard_frame, text="Answer:")
-        self.answer_label.grid(row=1, column=0, sticky="w")
+        self.answer_label.grid(row=2, rowspan=2, column=0, sticky="w")
 
-        self.question_entry = tk.Entry(self.edit_flashcard_frame)
-        self.question_entry.grid(row=0, column=1, padx=10, pady=5, sticky="nsew")
+        # self.question_entry = tk.Entry(self.edit_flashcard_frame)
+        # self.question_entry.grid(row=0, column=1, padx=10, pady=5, sticky="nsew")
 
-        self.answer_entry = tk.Entry(self.edit_flashcard_frame)
-        self.answer_entry.grid(row=1, column=1, padx=10, pady=5, sticky="nsew")
+        self.question_textentry = tk.Text(self.edit_flashcard_frame, height=2, width=50, wrap="word")
+        self.question_textentry.grid(row=0, column=1, ipadx=10, ipady=10, pady=4, sticky="nsew")
+        self.question_textentry.configure(font=("Sans", 9))
+
+        # self.answer_entry = tk.Entry(self.edit_flashcard_frame)
+        # self.answer_entry.grid(row=1, column=1, padx=10, pady=5, sticky="nsew")
+
+        self.answer_textentry = tk.Text(self.edit_flashcard_frame, height=2, wrap="word")
+        self.answer_textentry.grid(row=2, column=1, ipadx=10, ipady=10, pady=4, sticky="nsew")
+        self.answer_textentry.configure(font=("Sans", 9))
 
         # Save Flashcard
         self.save_flashcard_button = tk.Button(self.edit_flashcard_frame, text="Save flashcard",
                                                command=self.edit_flashcard)
-        self.save_flashcard_button.grid(row=0, column=2, rowspan=2, padx=10, pady=10, sticky="e")
+        self.save_flashcard_button.grid(row=0, column=2, rowspan=4, padx=10, pady=10, sticky="e")
+
+        # Stretch the entry fields
+        self.edit_flashcard_frame.grid_columnconfigure(0, weight=0)
+        self.edit_flashcard_frame.grid_columnconfigure(1, weight=1)
+        self.edit_flashcard_frame.grid_columnconfigure(2, weight=0)
+        self.edit_flashcard_frame.grid_rowconfigure(0, weight=1)
+        self.edit_flashcard_frame.grid_rowconfigure(1, weight=1)
+        self.edit_flashcard_frame.grid_rowconfigure(2, weight=1)
+        self.edit_flashcard_frame.grid_rowconfigure(3, weight=1)
 
         # Set up bottom frame
         self.bottom_frame = tk.Frame(self)
@@ -121,6 +134,18 @@ class ManageFlashcardsFrame(tk.Frame):
         # https://stackoverflow.com/a/48934682/3780985
         self.bottom_frame.grid_columnconfigure(0, weight=1)
         self.bottom_frame.grid_columnconfigure(4, weight=1)
+
+        self.flashcards_frame.grid_rowconfigure(0, weight=1)
+        self.flashcards_frame.grid_columnconfigure(0, weight=1)
+
+        self.treeview_frame.grid_rowconfigure(0, weight=1)
+        self.treeview_frame.grid_columnconfigure(0, weight=1)
+
+        self.grid_columnconfigure(0, weight=1)
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=0)
+        self.grid_rowconfigure(2, weight=0)
 
         # All GUI setup is complete. Now load the deck.
         self.load_deck()
@@ -167,12 +192,16 @@ class ManageFlashcardsFrame(tk.Frame):
 
         flashcards = self.controller.database_manager.deck.flashcards
         if len(flashcards) > 0:
-            self.question_entry.config(state="normal")
-            self.answer_entry.config(state="normal")
+            # self.question_entry.config(state="normal")
+            # self.answer_entry.config(state="normal")
+            self.question_textentry.config(state="normal")
+            self.answer_textentry.config(state="normal")
             self.save_flashcard_button.config(state="normal")
         else:
-            self.question_entry.config(state="disabled")
-            self.answer_entry.config(state="disabled")
+            # self.question_entry.config(state="disabled")
+            # self.answer_entry.config(state="disabled")
+            self.question_textentry.config(state="disabled")
+            self.answer_textentry.config(state="disabled")
             self.save_flashcard_button.config(state="disabled")
 
     def remove_all_data_from_treeview(self) -> None:
@@ -249,8 +278,10 @@ class ManageFlashcardsFrame(tk.Frame):
         if self.controller.database_manager.deck.flashcards[index] is not None:
             current_flashcard = self.controller.database_manager.deck.flashcards[index]
             self.clear_entry_boxes()
-            self.question_entry.insert(0, current_flashcard.question)
-            self.answer_entry.insert(0, current_flashcard.answer)
+            # self.question_entry.insert(0, current_flashcard.question)
+            # self.answer_entry.insert(0, current_flashcard.answer)
+            self.question_textentry.insert(1.0, current_flashcard.question)
+            self.answer_textentry.insert(1.0, current_flashcard.answer)
         else:
             print("There is not any flashcard at index", index)
 
@@ -362,8 +393,10 @@ class ManageFlashcardsFrame(tk.Frame):
         """
         Clear text the text entry boxes in the frame.
         """
-        self.question_entry.delete(0, tk.END)
-        self.answer_entry.delete(0, tk.END)
+        # self.question_entry.delete(0, tk.END)
+        # self.answer_entry.delete(0, tk.END)
+        self.question_textentry.delete(1.0, tk.END)
+        self.answer_textentry.delete(1.0, tk.END)
 
     def edit_flashcard(self) -> None:
         """
@@ -371,8 +404,10 @@ class ManageFlashcardsFrame(tk.Frame):
         """
         selected_treeview_index = self.index_of_last_selection_in_treeview()
         flashcard = self.controller.database_manager.deck.flashcards[selected_treeview_index]
-        question = str(self.question_entry.get())
-        answer = str(self.answer_entry.get())
+        # question = str(self.question_entry.get())
+        # answer = str(self.answer_entry.get())
+        question = str(self.question_textentry.get())
+        answer = str(self.answer_textentry.get())
         question = question.strip()
         answer = answer.strip()
         if len(question) == 0 or len(answer) == 0:
