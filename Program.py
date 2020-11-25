@@ -174,6 +174,11 @@ class Program(tk.Tk):
         """
         deck = self.database_manager.deck
         frame = self.frames[Program.STUDYFRAME]
+
+        # Ask to save if there is any unsaved changes in the entry boxes
+        manage_flashcards_frame = self.frames[Program.FLASHCARDSFRAME]
+        manage_flashcards_frame.ask_save_question_if_necessary()
+
         # Safety check
         if isinstance(frame, StudyFrame):
             try:
@@ -194,9 +199,14 @@ class Program(tk.Tk):
         """
         deck = self.database_manager.deck
         frame = self.frames[Program.DECKSFRAME]
+
+        # Ask to save if there is any unsaved changes in the entry boxes
+        manage_flashcards_frame = self.frames[Program.FLASHCARDSFRAME]
+        manage_flashcards_frame.ask_save_question_if_necessary()
+
         # Safety check
         if isinstance(frame, ManageDecksFrame):
-            frame.prepare_view()
+            frame.prepare_manage_decks_view()
             frame.tkraise()
             if deck is None:
                 tk.messagebox.showwarning("Info", """
@@ -219,13 +229,13 @@ class Program(tk.Tk):
         if isinstance(frame, ManageFlashcardsFrame):
             try:
                 if hasattr(deck, "flashcards"):
-                    frame.load_deck()
-                    frame.prepare_view()
+                    # frame.load_deck()
+                    frame.prepare_manage_flashcards_view()
                     frame.tkraise()
                 else:
                     tk.messagebox.showwarning("Info", "You should add some flashcards first.", icon="info")
             except Exception as error:
-                print("Exception: ", error)
+                print("Exception in show_manage_flashcards_frame(): ", error)
         else:
             print("Error in show_manage_flashcards_frame()")
 
@@ -281,7 +291,7 @@ class Program(tk.Tk):
                 # print("filepath: ", filename)
                 result = self.import_export_manager.import_csv_file(filename)
                 if result:
-                    self.frames["ManageDecksFrame"].prepare_view()
+                    self.frames["ManageDecksFrame"].prepare_manage_decks_view()
                     tk.messagebox.showwarning("Info", "Import successful.", icon="info")
                 else:
                     tk.messagebox.showwarning("Info", "Import failed.")

@@ -22,6 +22,7 @@
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import tkinter as tk
+from typing import Optional
 
 from Flashcard import Flashcard
 
@@ -147,8 +148,8 @@ class ManageFlashcardsFrame(tk.Frame):
         self.grid_rowconfigure(1, weight=0)
         self.grid_rowconfigure(2, weight=0)
 
-        # All GUI setup is complete. Now load the deck.
-        self.load_deck()
+        # All GUI setup is complete. Now prepare the view contents.
+        self.prepare_manage_flashcards_view()
 
     def load_deck(self) -> None:
         """
@@ -159,7 +160,7 @@ class ManageFlashcardsFrame(tk.Frame):
         if deck is not None:
             deck_title_string = "Deck: " + deck.get_truncated_title()
             self.flashcards_frame.config(text=deck_title_string)
-            self.refresh_treeview()
+            # self.refresh_treeview()
         else:
             print("Deck is None in load_deck()")
 
@@ -183,26 +184,27 @@ class ManageFlashcardsFrame(tk.Frame):
 
     def refresh_treeview(self) -> None:
         """
-        Remove all contents from treeview, fill it with data and give it focus, or disable it if there is no data.
+        Remove all contents from treeview, fill it with data and give it focus.
         """
         self.remove_all_data_from_treeview()
         self.clear_entry_boxes()
         self.add_data_to_treeview()
         self.treeview.focus_set()
 
-        flashcards = self.controller.database_manager.deck.flashcards
-        if len(flashcards) > 0:
-            # self.question_entry.config(state="normal")
-            # self.answer_entry.config(state="normal")
-            self.question_textentry.config(state="normal")
-            self.answer_textentry.config(state="normal")
-            self.save_flashcard_button.config(state="normal")
-        else:
-            # self.question_entry.config(state="disabled")
-            # self.answer_entry.config(state="disabled")
-            self.question_textentry.config(state="disabled")
-            self.answer_textentry.config(state="disabled")
-            self.save_flashcard_button.config(state="disabled")
+        # flashcards = self.controller.database_manager.deck.flashcards
+
+        # if len(flashcards) > 0:
+        #     # self.question_entry.config(state="normal")
+        #     # self.answer_entry.config(state="normal")
+        #     self.question_textentry.config(state="normal")
+        #     self.answer_textentry.config(state="normal")
+        #     self.save_flashcard_button.config(state="normal")
+        # else:
+        #     # self.question_entry.config(state="disabled")
+        #     # self.answer_entry.config(state="disabled")
+        #     self.question_textentry.config(state="disabled")
+        #     self.answer_textentry.config(state="disabled")
+        #     self.save_flashcard_button.config(state="disabled")
 
     def remove_all_data_from_treeview(self) -> None:
         """
@@ -214,12 +216,15 @@ class ManageFlashcardsFrame(tk.Frame):
     def index_of_last_selection_in_treeview(self) -> int:
         """
         Returns the index of the item that is last selected in treeview.
-        :return: Index of the item in the treeview.
+        :return: Index of the item in the treeview. -1 if there is no item.
         """
         # Details: https://stackoverflow.com/a/30615520/3780985
-        row_index = int(self.treeview.focus())
-        # print("item: ", self.treeview.item(row_index))
-        return row_index
+        result = -1
+        if self.treeview.focus() != '':
+            row_index = int(self.treeview.focus())
+            # print("item: ", self.treeview.item(row_index))
+            result = row_index
+        return result
 
     def get_flashcards_when_multiple_selection_in_treeview(self) -> [Flashcard]:
         """
@@ -270,20 +275,36 @@ class ManageFlashcardsFrame(tk.Frame):
         else:
             print("Error: No flashcard for select_flashcard_at_index(), index: ", index)
 
+    def selected_flashcard(self) -> Optional[Flashcard]:
+        """
+        Returns if there is a flashcard selected in the treeview.
+        :return: Checks the treeview if there is an item selected. If yes, returns selected Flashcard. If no,
+        returns None.
+        :rtype: Flashcard or None
+        """
+        result = None
+        index = self.index_of_last_selection_in_treeview()
+        if (len(self.controller.database_manager.deck.flashcards) > 0) and (index >= 0):
+            if self.controller.database_manager.deck.flashcards[index] is not None:
+                selected_flashcard = self.controller.database_manager.deck.flashcards[index]
+                result = selected_flashcard
+        return result
+
     def fill_entry_boxes_based_on_selected_row_index(self, index) -> None:
         """
         Fill text entry boxes based on the selected row index in the treeview.
         :param int index: Index of selected row in treeview.
         """
-        if self.controller.database_manager.deck.flashcards[index] is not None:
-            current_flashcard = self.controller.database_manager.deck.flashcards[index]
-            self.clear_entry_boxes()
-            # self.question_entry.insert(0, current_flashcard.question)
-            # self.answer_entry.insert(0, current_flashcard.answer)
-            self.question_textentry.insert(1.0, current_flashcard.question)
-            self.answer_textentry.insert(1.0, current_flashcard.answer)
-        else:
-            print("There is not any flashcard at index", index)
+        if (len(self.controller.database_manager.deck.flashcards) > 0) and (index >= 0):
+            if self.controller.database_manager.deck.flashcards[index] is not None:
+                current_flashcard = self.controller.database_manager.deck.flashcards[index]
+                self.clear_entry_boxes()
+                # self.question_entry.insert(0, current_flashcard.question)
+                # self.answer_entry.insert(0, current_flashcard.answer)
+                self.question_textentry.insert(1.0, current_flashcard.question)
+                self.answer_textentry.insert(1.0, current_flashcard.answer)
+            else:
+                print("There is not any flashcard at index", index)
 
     # Binding function for treeview selection event
     def row_selected(self, event):
@@ -291,7 +312,11 @@ class ManageFlashcardsFrame(tk.Frame):
         Event handler for row selection in treeview.
         :param event: Treeview button release
         """
-        self.add_mode_switch(status=False)
+        # Check if there are any flashcards in the deck
+        if len(self.controller.database_manager.deck.flashcards) > 0:
+            # Set add_mode_switch to False. This will automatically enable entry boxes for the selected flashcard
+            # if any.
+            self.add_mode_switch(status=False)
 
     def start_studying(self) -> None:
         """
@@ -327,7 +352,13 @@ class ManageFlashcardsFrame(tk.Frame):
         else:
             self.adding_new_flashcard = False
             self.edit_flashcard_frame.config(text="Edit flashcard... ")
-            self.fill_entry_boxes_based_on_selected_row_index(self.index_of_last_selection_in_treeview())
+            index = self.index_of_last_selection_in_treeview()
+            # Safety check
+            if index >= 0:
+                self.fill_entry_boxes_based_on_selected_row_index()
+
+        # Set the status of the buttons depending on the add/edit mode/status
+        self.configure_buttons()
 
     def add_new_flashcard(self) -> None:
         """
@@ -343,9 +374,9 @@ class ManageFlashcardsFrame(tk.Frame):
     #     and to the treeview.
     #     """
     #
-    #     # todo: remove this function and merge it with create_new_flashcard()
+    #     # done: remove this function and merge it with create_new_flashcard()
     #
-    #     # TODO: Add new flashcards by using the text entry boxes. That would be more user friendly, especially
+    #     # done: Add new flashcards by using the text entry boxes. That would be more user friendly, especially
     #     #  when user enters a question or answer longer than allowed.
     #
     #     add_flashcard = True
@@ -425,6 +456,17 @@ class ManageFlashcardsFrame(tk.Frame):
         self.clear_entry_boxes()
         self.refresh_treeview()
         self.select_first_flashcard()
+        self.activate_adding_flashcard_mode_if_no_flashcard()
+
+    def activate_adding_flashcard_mode_if_no_flashcard(self):
+        """
+        Activate adding flashcard mode if there is no flashcard in the deck. This will make the program more
+        easy-to-use, because user will not have to click on "Add flashcard" button to add a new flashcard.
+        """
+        if len(self.controller.database_manager.deck.flashcards) == 0:
+            self.add_mode_switch(True)
+        else:
+            self.add_mode_switch(False)
 
     def clear_entry_boxes(self) -> None:
         """
@@ -440,43 +482,42 @@ class ManageFlashcardsFrame(tk.Frame):
                 Updates flashcard by using texts in entry boxes.
                 """
         selected_treeview_index = self.index_of_last_selection_in_treeview()
-        flashcard = self.controller.database_manager.deck.flashcards[selected_treeview_index]
-        # question = str(self.question_entry.get())
-        # answer = str(self.answer_entry.get())
-        question = str(self.question_textentry.get("1.0", tk.END))
-        answer = str(self.answer_textentry.get("1.0", tk.END))
-        question = question.strip()
-        answer = answer.strip()
-        if len(question) == 0 or len(answer) == 0:
-            tk.messagebox.showwarning("Info", "Question or answer cannot be empty.")
-        elif len(question) > Flashcard.MAX_LENGTH_OF_QUESTION:
-            warning_message = "Question cannot be longer than {} characters.".format(
-                Flashcard.MAX_LENGTH_OF_QUESTION)
-            tk.messagebox.showwarning("Too long question", warning_message)
-        elif len(answer) > Flashcard.MAX_LENGTH_OF_ANSWER:
-            warning_message = "Answer cannot be longer than {} characters.".format(
-                Flashcard.MAX_LENGTH_OF_ANSWER)
-            tk.messagebox.showwarning("Too long answer", warning_message)
-        else:
-            flashcard.question = question
-            flashcard.answer = answer
-            self.controller.database_manager.update_flashcard_in_db(flashcard_id=flashcard.flashcard_id,
-                                                                    question=question,
-                                                                    answer=answer,
-                                                                    last_study_date=flashcard.last_study_date,
-                                                                    due_date_string=flashcard.due_date_string,
-                                                                    inter_repetition_interval=flashcard.inter_repetition_interval,
-                                                                    easiness_factor=flashcard.easiness_factor,
-                                                                    repetition_number=flashcard.repetition_number
-                                                                    )
-            self.refresh_treeview()
-            self.select_flashcard_at_index(selected_treeview_index)
+        # Safety check
+        if selected_treeview_index >= 0:
+            flashcard = self.controller.database_manager.deck.flashcards[selected_treeview_index]
+            # question = str(self.question_entry.get())
+            # answer = str(self.answer_entry.get())
+            question = str(self.question_textentry.get("1.0", tk.END))
+            answer = str(self.answer_textentry.get("1.0", tk.END))
+            question = question.strip()
+            answer = answer.strip()
+            if len(question) == 0 or len(answer) == 0:
+                tk.messagebox.showwarning("Info", "Question or answer cannot be empty.")
+            elif len(question) > Flashcard.MAX_LENGTH_OF_QUESTION:
+                warning_message = "Question cannot be longer than {} characters.".format(
+                    Flashcard.MAX_LENGTH_OF_QUESTION)
+                tk.messagebox.showwarning("Too long question", warning_message)
+            elif len(answer) > Flashcard.MAX_LENGTH_OF_ANSWER:
+                warning_message = "Answer cannot be longer than {} characters.".format(
+                    Flashcard.MAX_LENGTH_OF_ANSWER)
+                tk.messagebox.showwarning("Too long answer", warning_message)
+            else:
+                flashcard.question = question
+                flashcard.answer = answer
+                self.controller.database_manager.update_flashcard_in_db(flashcard_id=flashcard.flashcard_id,
+                                                                        question=question,
+                                                                        answer=answer,
+                                                                        last_study_date=flashcard.last_study_date,
+                                                                        due_date_string=flashcard.due_date_string,
+                                                                        inter_repetition_interval=flashcard.inter_repetition_interval,
+                                                                        easiness_factor=flashcard.easiness_factor,
+                                                                        repetition_number=flashcard.repetition_number
+                                                                        )
+                self.refresh_treeview()
+                self.select_flashcard_at_index(selected_treeview_index)
 
-    def create_new_flashcard(self) -> None:
-        """
-        Creates and adds a new flashcard to the current deck. It saves it to the database by calling necessary
-        functions.
-        """
+    def are_entry_box_entries_valid_to_save(self) -> bool:
+        result = False
         question_is_valid = True
         answer_is_valid = True
         question = self.question_textentry.get("1.0", tk.END).strip()
@@ -501,6 +542,18 @@ class ManageFlashcardsFrame(tk.Frame):
             answer_is_valid = False
 
         if question_is_valid and answer_is_valid:
+            result = True
+        else:
+            result = False
+
+        return result
+
+    def create_new_flashcard(self) -> None:
+        """
+        Creates and adds a new flashcard to the current deck. It saves it to the database by calling necessary
+        functions.
+        """
+        if self.are_entry_box_entries_valid_to_save():
             deck_id = self.controller.database_manager.deck.deck_id
 
             due_date_string = self.controller.database_manager.today_as_string()
@@ -533,7 +586,7 @@ class ManageFlashcardsFrame(tk.Frame):
 
             self.scroll_to_the_bottom_of_treeview()
 
-            self.adding_new_flashcard = False
+            self.add_mode_switch(False)
 
     def scroll_to_the_bottom_of_treeview(self) -> None:
         """
@@ -551,16 +604,71 @@ class ManageFlashcardsFrame(tk.Frame):
         Called when "Save flashcard" buttons pressed. It calls relevant functions based on the status of the
         self.adding_new_flashcard flag.
         """
+
+        # Set self.adding_new_flashcard = True when there is no flashcard in the deck. Because when there is no
+        # flashcard, user will probably trying to add a new flashcard by using the entry boxes, instead of trying to
+        # edit something.
+        if len(self.controller.database_manager.deck.flashcards) == 0:
+            self.adding_new_flashcard = True
+
         if self.adding_new_flashcard:
             self.create_new_flashcard()
         else:
             self.update_existing_flashcard()
 
-    def prepare_view(self) -> None:
+    def configure_buttons(self) -> None:
+        """
+        Set the status of the buttons depending on the adding/editing flashcard status, and on the amount of flashcards.
+        """
+        if len(self.controller.database_manager.deck.flashcards) == 0:
+            self.start_studying_button.config(state="disabled")
+            self.remove_flashcard_button.config(state="disabled")
+        else:
+            self.start_studying_button.config(state="normal")
+            self.remove_flashcard_button.config(state="normal")
+
+        if self.adding_new_flashcard:
+            self.add_flashcard_button.config(state="disabled")
+            self.remove_flashcard_button.config(state="disabled")
+            self.start_studying_button.config(state="disabled")
+        else:
+            self.add_flashcard_button.config(state="normal")
+            self.remove_flashcard_button.config(state="normal")
+            self.start_studying_button.config(state="normal")
+
+    def is_there_unsaved_changes_in_flashcard(self) -> bool:
+        """
+        Check if there is any changes made in the flashcard's question or answer.
+        :return: True if there is any change. False if there is not.
+        :rtype: bool
+        """
+        result = False
+        question_in_entrybox = self.question_textentry.get("1.0", tk.END).strip()
+        answer_in_entrybox = self.answer_textentry.get("1.0", tk.END).strip()
+        selected_flashcard = self.selected_flashcard()
+        if selected_flashcard != None:
+            if (question_in_entrybox != selected_flashcard.question or
+                answer_in_entrybox != selected_flashcard.answer):
+                result = True
+        return result
+
+    def ask_save_question_if_necessary(self):
+        asking_is_necessary = False
+        adding_new_flashcard = self.adding_new_flashcard
+        unsaved_changes = self.is_there_unsaved_changes_in_flashcard()
+        valid_entries = self.are_entry_box_entries_valid_to_save()
+        if (adding_new_flashcard or unsaved_changes) and valid_entries:
+            response = tk.messagebox.askquestion('Save changes?', 'Would you like to save this flashcard?')
+            if response == 'yes':
+                self.save_flashcard_button_pressed()
+
+    def prepare_manage_flashcards_view(self) -> None:
         """
         Prepare the view before bringing it to the front (displaying it to the user), by refreshing the treeview and
         selecting the first flashcard in the treeview.
         """
+        # done: refresh_treeview() is called here and in load_deck(). Eliminate duplicate calls.
+        self.load_deck()
         self.refresh_treeview()
         self.select_first_flashcard()
-        self.add_mode_switch(status=False)
+        self.activate_adding_flashcard_mode_if_no_flashcard()

@@ -356,7 +356,7 @@ class ManageDecksFrame(tk.Frame):
             self.treeview.selection_set(count - 1)
             self.treeview.focus(count - 1)
 
-    def prepare_view(self) -> None:
+    def prepare_manage_decks_view(self) -> None:
         """
         Prepare the view before bringing it to the front (displaying it to the user), by refreshing the treeview and
         selecting the first row in the treeview.
