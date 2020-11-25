@@ -530,9 +530,9 @@ class ManageFlashcardsFrame(tk.Frame):
         question = self.question_textentry.get("1.0", tk.END).strip()
         answer = self.answer_textentry.get("1.0", tk.END).strip()
 
-        if len(question) <= 0:
+        if len(question) <= 0 or len(answer) <= 0:
             if show_warnings:
-                tk.messagebox.showwarning("Info", "Question cannot be empty.")
+                tk.messagebox.showwarning("Info", "Question or answer cannot be empty.")
             question_is_valid = False
         elif len(question) > Flashcard.MAX_LENGTH_OF_QUESTION:
             if show_warnings:
@@ -540,11 +540,6 @@ class ManageFlashcardsFrame(tk.Frame):
                     Flashcard.MAX_LENGTH_OF_QUESTION)
                 tk.messagebox.showwarning("Too long question", warning_message)
             question_is_valid = False
-
-        if len(answer) <= 0:
-            if show_warnings:
-                tk.messagebox.showwarning("Info", "Answer cannot be empty.")
-            answer_is_valid = False
         elif len(answer) > Flashcard.MAX_LENGTH_OF_ANSWER:
             if show_warnings:
                 warning_message = "Answer cannot be longer than {} characters.".format(
