@@ -98,6 +98,9 @@ class Program(tk.Tk):
         # Frames dictionary will hold all the Frames (other views) that the GUI of the program consists of.
         self.frames = dict()
 
+        # Current frame
+        self.current_frame = None
+
         # Initialize child frames by iterating through the "Frame classes", classes that inherits from tk.Frame
         # Add initialized frames to the self.frames dictionary. It will provide access and persistence (in memory).
         for frame in (StudyFrame, ManageDecksFrame, ManageFlashcardsFrame):
@@ -176,8 +179,9 @@ class Program(tk.Tk):
         frame = self.frames[Program.STUDYFRAME]
 
         # Ask to save if there is any unsaved changes in the entry boxes
-        manage_flashcards_frame = self.frames[Program.FLASHCARDSFRAME]
-        manage_flashcards_frame.ask_save_question_if_necessary()
+        if isinstance(self.current_frame, ManageFlashcardsFrame):
+            manage_flashcards_frame = self.frames[Program.FLASHCARDSFRAME]
+            manage_flashcards_frame.ask_save_question_if_necessary()
 
         # Safety check
         if isinstance(frame, StudyFrame):
@@ -186,6 +190,7 @@ class Program(tk.Tk):
                     if len(deck.flashcards) > 0:
                         frame.prepare_view(show_only_due_flashcards=show_only_due_flashcards)
                         frame.tkraise()
+                        self.current_frame = frame
                     else:
                         tk.messagebox.showwarning("Info", "You should add some flashcards first.", icon="info")
             except AttributeError:
@@ -201,13 +206,15 @@ class Program(tk.Tk):
         frame = self.frames[Program.DECKSFRAME]
 
         # Ask to save if there is any unsaved changes in the entry boxes
-        manage_flashcards_frame = self.frames[Program.FLASHCARDSFRAME]
-        manage_flashcards_frame.ask_save_question_if_necessary()
+        if isinstance(self.current_frame, ManageFlashcardsFrame):
+            manage_flashcards_frame = self.frames[Program.FLASHCARDSFRAME]
+            manage_flashcards_frame.ask_save_question_if_necessary()
 
         # Safety check
         if isinstance(frame, ManageDecksFrame):
             frame.prepare_manage_decks_view()
             frame.tkraise()
+            self.current_frame = frame
             if deck is None:
                 tk.messagebox.showwarning("Info", """
                 Welcome to Flashcards!
@@ -232,6 +239,7 @@ class Program(tk.Tk):
                     # frame.load_deck()
                     frame.prepare_manage_flashcards_view()
                     frame.tkraise()
+                    self.current_frame = frame
                 else:
                     tk.messagebox.showwarning("Info", "You should add some flashcards first.", icon="info")
             except Exception as error:
