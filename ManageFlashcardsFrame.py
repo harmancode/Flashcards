@@ -355,7 +355,7 @@ class ManageFlashcardsFrame(tk.Frame):
             index = self.index_of_last_selection_in_treeview()
             # Safety check
             if index >= 0:
-                self.fill_entry_boxes_based_on_selected_row_index()
+                self.fill_entry_boxes_based_on_selected_row_index(index)
 
         # Set the status of the buttons depending on the add/edit mode/status
         self.configure_buttons()
