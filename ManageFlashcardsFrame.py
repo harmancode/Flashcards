@@ -516,7 +516,14 @@ class ManageFlashcardsFrame(tk.Frame):
                 self.refresh_treeview()
                 self.select_flashcard_at_index(selected_treeview_index)
 
-    def are_entry_box_entries_valid_to_save(self) -> bool:
+    def are_entry_box_entries_valid_to_save(self, show_warnings:bool=False) -> bool:
+        """
+        Checks if entry boxes have valid entries to be saved as Flashcard properties.
+        :param show_warnings: If True, user will be warned about the issue.
+        :type show_warnings: bool
+        :return: True if entries are valid. False if not.
+        :rtype: bool
+        """
         result = False
         question_is_valid = True
         answer_is_valid = True
@@ -524,21 +531,25 @@ class ManageFlashcardsFrame(tk.Frame):
         answer = self.answer_textentry.get("1.0", tk.END).strip()
 
         if len(question) <= 0:
-            tk.messagebox.showwarning("Info", "Question cannot be empty.")
+            if show_warnings:
+                tk.messagebox.showwarning("Info", "Question cannot be empty.")
             question_is_valid = False
         elif len(question) > Flashcard.MAX_LENGTH_OF_QUESTION:
-            warning_message = "Question cannot be longer than {} characters.".format(
-                Flashcard.MAX_LENGTH_OF_QUESTION)
-            tk.messagebox.showwarning("Too long question", warning_message)
+            if show_warnings:
+                warning_message = "Question cannot be longer than {} characters.".format(
+                    Flashcard.MAX_LENGTH_OF_QUESTION)
+                tk.messagebox.showwarning("Too long question", warning_message)
             question_is_valid = False
 
         if len(answer) <= 0:
-            tk.messagebox.showwarning("Info", "Answer cannot be empty.")
+            if show_warnings:
+                tk.messagebox.showwarning("Info", "Answer cannot be empty.")
             answer_is_valid = False
         elif len(answer) > Flashcard.MAX_LENGTH_OF_ANSWER:
-            warning_message = "Answer cannot be longer than {} characters.".format(
-                Flashcard.MAX_LENGTH_OF_ANSWER)
-            tk.messagebox.showwarning("Too long answer", warning_message)
+            if show_warnings:
+                warning_message = "Answer cannot be longer than {} characters.".format(
+                    Flashcard.MAX_LENGTH_OF_ANSWER)
+                tk.messagebox.showwarning("Too long answer", warning_message)
             answer_is_valid = False
 
         if question_is_valid and answer_is_valid:
@@ -553,7 +564,7 @@ class ManageFlashcardsFrame(tk.Frame):
         Creates and adds a new flashcard to the current deck. It saves it to the database by calling necessary
         functions.
         """
-        if self.are_entry_box_entries_valid_to_save():
+        if self.are_entry_box_entries_valid_to_save(show_warnings=True):
             deck_id = self.controller.database_manager.deck.deck_id
 
             due_date_string = self.controller.database_manager.today_as_string()
