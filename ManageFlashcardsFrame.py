@@ -102,7 +102,11 @@ class ManageFlashcardsFrame(tk.Frame):
         # Save Flashcard
         self.save_flashcard_button = tk.Button(self.edit_flashcard_frame, text="Save flashcard",
                                                command=self.save_flashcard_button_pressed)
-        self.save_flashcard_button.grid(row=0, column=2, rowspan=4, padx=10, pady=10, sticky="e")
+        self.save_flashcard_button.grid(row=0, column=2, rowspan=2, padx=10, pady=10, sticky="we")
+
+        self.cancel_button = tk.Button(self.edit_flashcard_frame, text="Cancel",
+                                       command=self.cancel_button_pressed)
+        self.cancel_button.grid(row=1, column=2, rowspan=2, padx=10, pady=10, sticky="we")
 
         # Stretch the entry fields
         self.edit_flashcard_frame.grid_columnconfigure(0, weight=0)
@@ -246,7 +250,8 @@ class ManageFlashcardsFrame(tk.Frame):
         if len(self.controller.database_manager.deck.flashcards) > 0:
             self.select_flashcard_at_index(0)
         else:
-            print("Error: No flashcard for select_first_flashcard()")
+            pass
+            # print("Error: No flashcard for select_first_flashcard()")
 
     def select_last_flashcard_in_treeview(self) -> None:
         """
@@ -351,14 +356,24 @@ class ManageFlashcardsFrame(tk.Frame):
             self.remove_selection_from_treeview()
         else:
             self.adding_new_flashcard = False
-            self.edit_flashcard_frame.config(text="Edit flashcard... ")
             index = self.index_of_last_selection_in_treeview()
             # Safety check
             if index >= 0:
                 self.fill_entry_boxes_based_on_selected_row_index(index)
+                self.edit_flashcard_frame.config(text="Edit flashcard... ")
 
         # Set the status of the buttons depending on the add/edit mode/status
         self.configure_buttons()
+
+    def cancel_button_pressed(self) -> None:
+        """
+        Event handler for cancel button click.
+        """
+        self.add_mode_switch(status=False)
+        self.treeview.focus_set()
+        index = self.index_of_last_selection_in_treeview()
+        if index >= 0:
+            self.treeview.selection_set(index)
 
     def add_new_flashcard(self) -> None:
         """
@@ -626,13 +641,6 @@ class ManageFlashcardsFrame(tk.Frame):
         """
         Set the status of the buttons depending on the adding/editing flashcard status, and on the amount of flashcards.
         """
-        if len(self.controller.database_manager.deck.flashcards) == 0:
-            self.start_studying_button.config(state="disabled")
-            self.remove_flashcard_button.config(state="disabled")
-        else:
-            self.start_studying_button.config(state="normal")
-            self.remove_flashcard_button.config(state="normal")
-
         if self.adding_new_flashcard:
             self.add_flashcard_button.config(state="disabled")
             self.remove_flashcard_button.config(state="disabled")
@@ -641,6 +649,13 @@ class ManageFlashcardsFrame(tk.Frame):
             self.add_flashcard_button.config(state="normal")
             self.remove_flashcard_button.config(state="normal")
             self.start_studying_button.config(state="normal")
+
+        if len(self.controller.database_manager.deck.flashcards) == 0:
+            self.start_studying_button.config(state="disabled")
+            self.remove_flashcard_button.config(state="disabled")
+        else:
+            self.start_studying_button.config(state="normal")
+            self.remove_flashcard_button.config(state="normal")
 
     def is_there_unsaved_changes_in_flashcard(self) -> bool:
         """
