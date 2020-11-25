@@ -579,6 +579,11 @@ class ManageFlashcardsFrame(tk.Frame):
 
             due_date_string = self.controller.database_manager.today_as_string()
 
+            # It is safe to take data from textentry boxes because their validity has just been checked in
+            # self.are_entry_box_entries_valid_to_save()
+            question = self.question_textentry.get("1.0", tk.END).strip()
+            answer = self.answer_textentry.get("1.0", tk.END).strip()
+
             # Add flashcard to the database and obtain a unique flashcard_id
             new_flashcard_id = self.controller.database_manager.add_new_flashcard_to_db(
                 deck_id=deck_id,
