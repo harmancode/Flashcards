@@ -99,6 +99,11 @@ class Flashcard:
             self.inter_repetition_interval = 1
         if self.easiness_factor < 1.3:
             self.easiness_factor = 1.3
+        # DEBUG
+        # print("Flashcard's new internal values:")
+        # print("repetition_number: ", self.repetition_number)
+        # print("inter_repetition_interval: ", self.inter_repetition_interval)
+        # print("easiness_factor: ", self.easiness_factor)
 
     def set_last_study_date(self, database_manager) -> None:
         """
@@ -122,6 +127,8 @@ class Flashcard:
         due_date = datetime.datetime.now() + datetime.timedelta(self.inter_repetition_interval)
         # today = datetime.datetime.today()
         self.due_date_string = due_date.strftime('%Y-%m-%d')
+        # DEBUG
+        # print("Flashcard's new due date: ", self.due_date_string)
 
     def process_answer(self, grade, database_manager) -> None:
         """
