@@ -373,21 +373,3 @@ class ManageDecksFrame(tk.Frame):
                     self.edit_deck_button.focus_set()
         else:
             self.new_deck_button.focus_set()
-
-    def export_deck_as_csv_file(self) -> None:
-        """
-        Export function is called for the selected deck.
-        """
-        deck = self.get_selected_deck()
-        if deck is not None:
-            file = tkinter.filedialog.asksaveasfile(filetypes=(("CSV files", "*.csv"),
-                                                                     ("All files", "*.*")))
-            filepath = file.name
-            filepath += ".csv"
-            self.controller.import_export_manager.export_csv_file(filepath=filepath, deck=deck)
-        else:
-            if len(self.controller.database_manager.decks) == 0:
-                tk.messagebox.showwarning("Info", "There is not any deck to export. Click on \"New deck\" button to "
-                                                  "create one.")
-            else:
-                tk.messagebox.showwarning("Info", "Please select a deck first.")

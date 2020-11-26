@@ -78,8 +78,8 @@ class Program(tk.Tk):
         self.decks_menu.add_command(label="Decks...", command=self.show_manage_decks_frame)
         self.decks_menu.add_command(label="Flashcards...", command=self.show_manage_flashcards_frame)
         self.decks_menu.add_separator()
-        self.decks_menu.add_command(label="Import deck as CSV file...", command=self.import_deck_from_csv_file)
-        self.decks_menu.add_command(label="Export deck as CSV file...", command=self.export_deck_as_csv_file_menu_command)
+        self.decks_menu.add_command(label="Import...", command=self.import_deck_from_csv_file)
+        self.decks_menu.add_command(label="Export...", command=self.export_deck_as_csv_file_menu_command)
         self.decks_menu.add_separator()
         self.decks_menu.add_command(label="Quit", command=self.quit)
 
@@ -307,7 +307,8 @@ class Program(tk.Tk):
             except:  # <- naked except is a bad idea
                 tk.messagebox.showerror("Open Source File", "Failed to read file\n'%s'" % filename)
         else:
-            print("Filename error in import_deck_from_csv_file()")
+            pass
+            # print("Filename error in import_deck_from_csv_file()")
 
     def export_deck_as_csv_file_menu_command(self):
         """
@@ -351,4 +352,8 @@ class Program(tk.Tk):
 
                     tk.messagebox.showinfo("Info", export_message)
         else:
-            tk.messagebox.showwarning("Info", "Please select a deck first.")
+            if len(self.database_manager.decks) == 0:
+                tk.messagebox.showwarning("Info", "There is not any deck to export. Click on \"New deck\" button to "
+                                                  "create one.")
+            else:
+                tk.messagebox.showwarning("Info", "Please select a deck first.")
