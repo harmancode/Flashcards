@@ -64,7 +64,7 @@ class ImportExportManager:
                         elif row['key'] == 'fileversion':
                             # There is not any process defined yet for this data.
                             pass
-                        elif row['key'] != 'program':
+                        elif row['key'] == 'program':
                             # There is not any process defined yet for this data.
                             pass
                         else:
