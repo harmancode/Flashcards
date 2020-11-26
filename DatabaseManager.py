@@ -274,7 +274,7 @@ class DatabaseManager:
                                   easiness_factor=easiness_factor,
                                   repetition_number=repetition_number)
             # print()
-            deck.flashcards.append(flashcard)
+            deck.append_to_flashcards(flashcard)
         self.close_db()
 
     def today_as_string(self):

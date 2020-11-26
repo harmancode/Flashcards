@@ -29,6 +29,11 @@ from Deck import Deck
 from Flashcard import Flashcard
 from DatabaseManager import DatabaseManager
 
+try:
+    import tkinter as tk  # python 3
+except ImportError:
+    import Tkinter as tk  # python 2
+
 
 class ImportExportManager:
 
@@ -53,6 +58,8 @@ class ImportExportManager:
                 reader.fieldnames = ("key", "value")
                 dictionary = dict()
                 decktitle = ""
+                count = 0
+                valid_file = False
 
                 # Process every row in the imported data
                 for row in reader:
@@ -70,46 +77,87 @@ class ImportExportManager:
                         else:
                             # Key is not special, process it as an ordinary row
                             dictionary[row['key']] = row['value']
+                            count += 1
                     except Exception as error:
                         print("Bad row in import_csv_file(): ", row)
                         print("Exception in import_csv_file(): ", error)
+                # end for row in reader
 
-                # Get current local time as formatted string
-                datetime_string = strftime("%Y-%m-%d %H:%M:%S", localtime())
+                if count <= 0:
+                    tk.messagebox.showwarning("No flashcards found",
+                                              "There is not any recognizable flashcards found in this file.")
+                    valid_file = False
+                elif count > Deck.MAXIMUM_AMOUNT_OF_FLASHCARDS:
+                    warning_message = "This file contains more flashcards that a deck may contain. " \
+                                      "A deck may not contain more than {} " \
+                                      "flashcards".format(Deck.MAXIMUM_AMOUNT_OF_FLASHCARDS)
+                    tk.messagebox.showwarning("Too many flashcards",
+                                              warning_message)
+                    valid_file = False
+                else:
+                    valid_file = True
+                # end if count <= ImportExportManager.MAXIMUM_FLASHCARDS_IN_IMPORTED_DECK
 
-                decktitle = decktitle.strip()
+                if valid_file:
+                    # Get current local time as formatted string
+                    datetime_string = strftime("%Y-%m-%d %H:%M:%S", localtime())
 
-                # If there is not any decktitle key found in the imported data, set a title by adding current date
-                # and time to the title.
-                if decktitle == '':
-                    decktitle = "Imported deck (" + datetime_string + ")"
+                    decktitle = decktitle.strip()
 
-                # Create imported deck in memory and in database
-                new_deck_id = self.database_manager.add_new_deck_to_db(decktitle)
-                new_deck = Deck(new_deck_id, decktitle)
-                self.database_manager.decks.append(new_deck)
+                    # If there is not any decktitle key found in the imported data, set a title by adding current date
+                    # and time to the title.
+                    if decktitle == '':
+                        decktitle = "Imported deck (" + datetime_string + ")"
 
-                # Add imported flashcards to the imported deck
-                listdict = list(dictionary.items())
-                for item in listdict:
-                    # print("item[0]: ", item[0])
-                    # print("item[1]: ", item[1])
-                    today_as_string = self.database_manager.today_as_string()
-                    new_flashcard_id = self.database_manager.add_new_flashcard_to_db(new_deck_id, item[0], item[1],
-                                                                                     last_study_date=None,
-                                                                                     due_date_string=today_as_string)
-                    new_flashcard = Flashcard(flashcard_id=new_flashcard_id,
-                                              deck_id=new_deck_id,
-                                              question=item[0],
-                                              answer=item[1])
-                    new_deck.flashcards.append(new_flashcard)
+                    # Create imported deck in memory and in database
+                    new_deck_id = self.database_manager.add_new_deck_to_db(decktitle)
+                    new_deck = Deck(new_deck_id, decktitle)
+                    self.database_manager.decks.append(new_deck)
 
-                return True
+                    # print()
+                    # print("dictionary is filled. its contents:", dictionary.items())
+                    # print("now passing to listdict phase...")
+
+                    # Add imported flashcards to the imported deck
+                    listdict = list(dictionary.items())
+
+                    for item in listdict:
+
+                        # print("question: ", item[0])
+                        # print("answer: ", item[1])
+
+                        today_as_string = self.database_manager.today_as_string()
+
+                        new_flashcard_id = self.database_manager.add_new_flashcard_to_db(deck_id=new_deck_id,
+                                                                                         question=item[0],
+                                                                                         answer=item[1],
+                                                                                         last_study_date=None,
+                                                                                         due_date_string=today_as_string)
+                        new_flashcard = Flashcard(flashcard_id=new_flashcard_id,
+                                                  deck_id=new_deck_id,
+                                                  question=item[0],
+                                                  answer=item[1])
+
+                        new_deck.append_to_flashcards(new_flashcard)
+
+                    # end for item in listdict
+
+                    return True
+
+                # end if valid_file
 
             return False
 
+            # end with open
+
+        # end try
+
         except Exception as error:
             print("Exception import_csv_file(): ", error)
+
+        # end except
+
+    # end import_csv_file()
 
     def export_csv_file(self, filepath, deck) -> bool:
         """
@@ -121,7 +169,9 @@ class ImportExportManager:
         :return: True if export is successful. Otherwise, false.
         :rtype: bool
         """
+
         try:
+
             with open(filepath, 'w', newline='', encoding='utf-8') as csvfile:
 
                 dictionary = dict()
@@ -148,5 +198,7 @@ class ImportExportManager:
                 return True
 
         except Exception as error:
+
             print("Exception export_csv_file(): ", error)
+
             return False

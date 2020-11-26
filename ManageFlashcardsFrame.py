@@ -24,6 +24,7 @@
 import tkinter as tk
 from typing import Optional
 
+from Deck import Deck
 from Flashcard import Flashcard
 
 
@@ -386,7 +387,10 @@ class ManageFlashcardsFrame(tk.Frame):
         Just calls self.add_mode_switch by passing True as status parameter. This function is called when user clicks
         on the "Add new flashcard..." button.
         """
-        self.add_mode_switch(status=True)
+        if len(self.controller.database_manager.deck.flashcards) < Deck.MAXIMUM_AMOUNT_OF_FLASHCARDS:
+            self.add_mode_switch(status=True)
+        else:
+            self.show_too_many_flashcards_warning()
 
     # def add_new_flashcard(self):
     #     """
@@ -538,7 +542,7 @@ class ManageFlashcardsFrame(tk.Frame):
                 self.refresh_treeview()
                 self.select_flashcard_at_index(selected_treeview_index)
 
-    def are_entry_box_entries_valid_to_save(self, show_warnings:bool=False) -> bool:
+    def are_entry_box_entries_valid_to_save(self, show_warnings: bool = False) -> bool:
         """
         Checks if entry boxes have valid entries to be saved as Flashcard properties.
         :param show_warnings: If True, user will be warned about the issue.
@@ -641,13 +645,25 @@ class ManageFlashcardsFrame(tk.Frame):
         # Set self.adding_new_flashcard = True when there is no flashcard in the deck. Because when there is no
         # flashcard, user will probably trying to add a new flashcard by using the entry boxes, instead of trying to
         # edit something.
-        if len(self.controller.database_manager.deck.flashcards) == 0:
-            self.adding_new_flashcard = True
 
-        if self.adding_new_flashcard:
-            self.create_new_flashcard()
+        if len(self.controller.database_manager.deck.flashcards) < Deck.MAXIMUM_AMOUNT_OF_FLASHCARDS:
+            if len(self.controller.database_manager.deck.flashcards) == 0:
+                self.adding_new_flashcard = True
+
+            if self.adding_new_flashcard:
+                self.create_new_flashcard()
+            else:
+                self.update_existing_flashcard()
         else:
-            self.update_existing_flashcard()
+            self.show_too_many_flashcards_warning()
+
+    def show_too_many_flashcards_warning(self) -> None:
+        """
+        Shows warning message when user tries to add a new flashcard when the deck is full.
+        """
+        warning_message = "A deck can not contain more than {} flashcards.".format(
+            Deck.MAXIMUM_AMOUNT_OF_FLASHCARDS)
+        tk.messagebox.showwarning("Too many flashcards", warning_message)
 
     def configure_buttons(self) -> None:
         """
@@ -681,7 +697,7 @@ class ManageFlashcardsFrame(tk.Frame):
         selected_flashcard = self.selected_flashcard()
         if selected_flashcard != None:
             if (question_in_entrybox != selected_flashcard.question or
-                answer_in_entrybox != selected_flashcard.answer):
+                    answer_in_entrybox != selected_flashcard.answer):
                 result = True
         return result
 

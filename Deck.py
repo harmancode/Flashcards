@@ -28,8 +28,9 @@ from Flashcard import Flashcard
 
 
 class Deck:
-    MAXIMUM_LENGTH_OF_DECK_TITLE = 250
+    MAXIMUM_LENGTH_OF_DECK_TITLE = 50
     MAXIMUM_LENGTH_OF_DECK_SHORT_TITLE = 20
+    MAXIMUM_AMOUNT_OF_FLASHCARDS = 10000
 
     def __init__(self, deck_id, title, last_study_datetime: Optional[datetime] = None):
         """
@@ -95,3 +96,21 @@ class Deck:
         :type database_manager: DatabaseManager
         """
         database_manager.load_due_flashcards(self)
+
+    def append_to_flashcards(self, flashcard) -> int:
+        """
+        Adds a new flashcard object to the list of flashcards
+        :param flashcard: Flashcard object to be added
+        :type flashcard: Flashcard
+        :return: Error codes; 0 for success, 1 for too many flashcards, 2 for object type error.
+        :rtype: int
+        """
+        if isinstance(flashcard, Flashcard):
+            if len(self.flashcards) < Deck.MAXIMUM_AMOUNT_OF_FLASHCARDS:
+                self.flashcards.append(flashcard)
+                return 0
+            else:
+                print("Too many flashcards")
+                return 1
+        else:
+            return 2

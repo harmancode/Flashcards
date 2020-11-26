@@ -301,9 +301,9 @@ class Program(tk.Tk):
                 result = self.import_export_manager.import_csv_file(filename)
                 if result:
                     self.frames["ManageDecksFrame"].prepare_manage_decks_view()
-                    tk.messagebox.showwarning("Info", "Import successful.", icon="info")
+                    tk.messagebox.showwarning("Info", "Import is successful.", icon="info")
                 else:
-                    tk.messagebox.showwarning("Info", "Import failed.")
+                    tk.messagebox.showwarning("Info", "Import has failed.")
             except:  # <- naked except is a bad idea
                 tk.messagebox.showerror("Open Source File", "Failed to read file\n'%s'" % filename)
         else:
