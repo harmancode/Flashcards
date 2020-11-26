@@ -79,6 +79,7 @@ class Program(tk.Tk):
         self.decks_menu.add_command(label="Flashcards...", command=self.show_manage_flashcards_frame)
         self.decks_menu.add_separator()
         self.decks_menu.add_command(label="Import deck as CSV file...", command=self.import_deck_from_csv_file)
+        self.decks_menu.add_command(label="Export deck as CSV file...", command=self.export_deck_as_csv_file_menu_command)
         self.decks_menu.add_separator()
         self.decks_menu.add_command(label="Quit", command=self.quit)
 
@@ -223,6 +224,8 @@ class Program(tk.Tk):
 
                 Click on the "New deck" button below to start.
                 """, icon='info')
+            frame.new_deck_button.focus_set()
+            frame.new_deck_button.focus_force()
         else:
             print("Error in show_manage_decks_frame()")
 
@@ -307,3 +310,47 @@ class Program(tk.Tk):
                 tk.messagebox.showerror("Open Source File", "Failed to read file\n'%s'" % filename)
         else:
             print("Filename error in import_deck_from_csv_file()")
+
+    def export_deck_as_csv_file_menu_command(self):
+        """
+        Export deck as a csv file menu command click handler
+        """
+
+        deck_to_be_exported = None
+
+        # Check if Decks view is open
+        if isinstance(self.current_frame, ManageDecksFrame):
+            deck_to_be_exported = self.current_frame.get_selected_deck()
+        elif isinstance(self.current_frame, ManageFlashcardsFrame):
+            deck_to_be_exported = self.database_manager.deck
+        elif isinstance(self.current_frame, StudyFrame):
+            deck_to_be_exported = self.database_manager.deck
+        else:
+            print("Error in export_deck_as_csv_file_menu_command()")
+
+        if deck_to_be_exported is not None:
+            file = tkinter.filedialog.asksaveasfile(filetypes=(("CSV files", "*.csv"),
+                                                               ("All files", "*.*")))
+            if file is not None:
+
+                filepath = file.name
+
+                # Add .csv extension only if there is not one already.
+                if filepath[-4:].lower() != ".csv":
+                    filepath += ".csv"
+
+                result = self.import_export_manager.export_csv_file(filepath=filepath, deck=deck_to_be_exported)
+
+                if result:
+
+                    export_message = """
+                    Export is successful.
+                    
+                    Please note that export functionality is for using this data in other applications. Therefore only deck's title, and all flashcards in the deck have been exported. Other data about the deck, such as last study date, due date, your previous responses to the flashcards, etc., have not been exported.
+                    
+                    If you intend to back up your data to use it later with this program you should not use export functionality for this purpose. You can back up \"Flashcards.db\" file that is located in the program directory (by copying it to another location, for example), and restore it later.
+                    """
+
+                    tk.messagebox.showinfo("Info", export_message)
+        else:
+            tk.messagebox.showwarning("Info", "Please select a deck first.")

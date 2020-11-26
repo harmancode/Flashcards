@@ -247,11 +247,12 @@ class ManageFlashcardsFrame(tk.Frame):
         Calls select_flashcard_at_index(self, index) for the first row in treeview.
         """
         # Select first row if there is any
-        if len(self.controller.database_manager.deck.flashcards) > 0:
-            self.select_flashcard_at_index(0)
-        else:
-            pass
-            # print("Error: No flashcard for select_first_flashcard()")
+        if self.controller.database_manager.deck is not None:
+            if len(self.controller.database_manager.deck.flashcards) > 0:
+                self.select_flashcard_at_index(0)
+            else:
+                pass
+                # print("Error: No flashcard for select_first_flashcard()")
 
     def select_last_flashcard_in_treeview(self) -> None:
         """
@@ -478,10 +479,11 @@ class ManageFlashcardsFrame(tk.Frame):
         Activate adding flashcard mode if there is no flashcard in the deck. This will make the program more
         easy-to-use, because user will not have to click on "Add flashcard" button to add a new flashcard.
         """
-        if len(self.controller.database_manager.deck.flashcards) == 0:
-            self.add_mode_switch(True)
-        else:
-            self.add_mode_switch(False)
+        if self.controller.database_manager.deck is not None:
+            if len(self.controller.database_manager.deck.flashcards) == 0:
+                self.add_mode_switch(True)
+            else:
+                self.add_mode_switch(False)
 
     def clear_entry_boxes(self) -> None:
         """

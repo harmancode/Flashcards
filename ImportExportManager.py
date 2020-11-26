@@ -22,7 +22,7 @@
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import csv
+import csv  # Documentation: https://docs.python.org/3/library/csv.html
 from time import localtime, strftime
 
 from Deck import Deck
@@ -68,7 +68,7 @@ class ImportExportManager:
                             # There is not any process defined yet for this data.
                             pass
                         else:
-                        # Key is not special, process it as an ordinary row
+                            # Key is not special, process it as an ordinary row
                             dictionary[row['key']] = row['value']
                     except Exception as error:
                         print("Bad row in import_csv_file(): ", row)
@@ -95,7 +95,9 @@ class ImportExportManager:
                     # print("item[0]: ", item[0])
                     # print("item[1]: ", item[1])
                     today_as_string = self.database_manager.today_as_string()
-                    new_flashcard_id = self.database_manager.add_new_flashcard_to_db(new_deck_id, item[0], item[1], last_study_date=None, due_date_string=today_as_string)
+                    new_flashcard_id = self.database_manager.add_new_flashcard_to_db(new_deck_id, item[0], item[1],
+                                                                                     last_study_date=None,
+                                                                                     due_date_string=today_as_string)
                     new_flashcard = Flashcard(flashcard_id=new_flashcard_id,
                                               deck_id=new_deck_id,
                                               question=item[0],
@@ -109,5 +111,42 @@ class ImportExportManager:
         except Exception as error:
             print("Exception import_csv_file(): ", error)
 
+    def export_csv_file(self, filepath, deck) -> bool:
+        """
+        Export a deck to a csv file.
+        :param filepath: Path of the file with .csv extension added.
+        :type filepath: str
+        :param deck: Deck object to be exported
+        :type deck: Deck
+        :return: True if export is successful. Otherwise, false.
+        :rtype: bool
+        """
+        try:
+            with open(filepath, 'w', newline='', encoding='utf-8') as csvfile:
 
-    # TODO: Code export function
+                dictionary = dict()
+
+                for flashcard in deck.flashcards:
+                    question = flashcard.question
+                    answer = flashcard.answer
+                    dictionary[question] = answer
+
+                fieldnames = ['key', 'value']
+
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+                # writer.writeheader() # Not necessary
+                writer.writerow({'key': 'decktitle', 'value': deck.title})
+
+                for key in dictionary:
+                    # Uncomment to print the data as it is being written to the file.
+                    # print("key: ", key)
+                    # print("value: ", dictionary[key])
+                    # print()
+                    writer.writerow({'key': key, 'value': dictionary[key]})
+
+                return True
+
+        except Exception as error:
+            print("Exception export_csv_file(): ", error)
+            return False
