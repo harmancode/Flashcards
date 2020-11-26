@@ -141,35 +141,34 @@ class Program(tk.Tk):
         Opens a deck and starts a study session if all preconditions are met.
         :param int index: Index of the deck in self.database_manager.decks[] list
         """
-        try:
+        deck = None
+        if len(self.database_manager.decks) > 0:
             deck = self.database_manager.decks[index]
-            if deck is not None:
-                deck.set_due_flashcards(self.database_manager)
-                count = len(deck.flashcards)
-                due_count = len(deck.due_flashcards)
-                if count > 0:
-                    if due_count > 0:
-                        # There are some due flashcards. Study session will only use those.
-                        self.database_manager.load_deck(index)
-                        self.show_study_frame(show_only_due_flashcards=True)
-                        self.frames[Program.STUDYFRAME].start_study_session()
-                    else:
-                        # There are not any due flashcards. Study session will use all flashcards in the deck if user
-                        # confirms.
-                        confirmation = tk.messagebox.askokcancel("No due flashcard",
-                                                                 "There is no due flashcard. Would you like to go over all of them?",
-                                                                 icon="question")
-                        if confirmation:
-                            self.database_manager.load_deck(index)
-                            self.show_study_frame(show_only_due_flashcards=False)
-                            self.frames[Program.STUDYFRAME].start_study_session()
+        if deck is not None:
+            deck.set_due_flashcards(self.database_manager)
+            count = len(deck.flashcards)
+            due_count = len(deck.due_flashcards)
+            if count > 0:
+                if due_count > 0:
+                    # There are some due flashcards. Study session will only use those.
+                    self.database_manager.load_deck(index)
+                    self.show_study_frame(show_only_due_flashcards=True)
+                    self.frames[Program.STUDYFRAME].start_study_session()
                 else:
-                    tk.messagebox.showwarning("Info",
-                                              "This deck is empty. Please add some flashcards to it first by clicking Flashcards button below.")
+                    # There are not any due flashcards. Study session will use all flashcards in the deck if user
+                    # confirms.
+                    confirmation = tk.messagebox.askokcancel("No due flashcard",
+                                                             "There is no due flashcard. Would you like to go over all of them?",
+                                                             icon="question")
+                    if confirmation:
+                        self.database_manager.load_deck(index)
+                        self.show_study_frame(show_only_due_flashcards=False)
+                        self.frames[Program.STUDYFRAME].start_study_session()
             else:
-                tk.messagebox.showwarning("Info", "You should create a deck first.")
-        except Exception as error:
-            print("Exception in open deck: ", error)
+                tk.messagebox.showwarning("Info",
+                                          "This deck is empty. Please add some flashcards to it first by clicking Flashcards button below.")
+        else:
+            tk.messagebox.showwarning("Info", "You should create a deck first.")
 
     def show_study_frame(self, show_only_due_flashcards=True) -> None:
         """
@@ -224,8 +223,7 @@ class Program(tk.Tk):
 
                 Click on the "New deck" button below to start.
                 """, icon='info')
-            frame.new_deck_button.focus_set()
-            frame.new_deck_button.focus_force()
+                frame.new_deck_button.focus_force()
         else:
             print("Error in show_manage_decks_frame()")
 

@@ -208,6 +208,7 @@ class ManageDecksFrame(tk.Frame):
                 self.treeview.focus(selected_index)
         else:
             tk.messagebox.showwarning("Info", "You should create a deck first.")
+            self.new_deck_button.focus_set()
 
     def refresh_treeview(self) -> None:
         """
@@ -284,7 +285,7 @@ class ManageDecksFrame(tk.Frame):
         # print("selected_deck_index: ", index)
         result = index
         if (index < 0) or (index > (len(self.controller.database_manager.decks) - 1)):
-            print("Error: Invalid index in get_selected_treeview_index")
+            # print("Error: Invalid index in get_selected_treeview_index")
             result = 0
         return result
 
@@ -363,6 +364,15 @@ class ManageDecksFrame(tk.Frame):
         """
         self.refresh_treeview()
         self.select_first_row_in_treeview()
+        selected_deck = self.get_selected_deck()
+        if len(self.controller.database_manager.decks) > 0:
+            if selected_deck is not None:
+                if len(selected_deck.flashcards) > 0:
+                    self.study_button.focus_set()
+                else:
+                    self.edit_deck_button.focus_set()
+        else:
+            self.new_deck_button.focus_set()
 
     def export_deck_as_csv_file(self) -> None:
         """

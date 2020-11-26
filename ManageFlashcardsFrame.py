@@ -166,7 +166,8 @@ class ManageFlashcardsFrame(tk.Frame):
             self.flashcards_frame.config(text=deck_title_string)
             # self.refresh_treeview()
         else:
-            print("Deck is None in load_deck()")
+            pass
+            # print("Deck is None in load_deck()")
 
     def add_data_to_treeview(self) -> None:
         """
@@ -370,11 +371,15 @@ class ManageFlashcardsFrame(tk.Frame):
         """
         Event handler for cancel button click.
         """
+        if self.adding_new_flashcard:
+            self.clear_entry_boxes()
         self.add_mode_switch(status=False)
         self.treeview.focus_set()
         index = self.index_of_last_selection_in_treeview()
         if index >= 0:
             self.treeview.selection_set(index)
+        else:
+            self.add_flashcard_button.focus_set()
 
     def add_new_flashcard(self) -> None:
         """
