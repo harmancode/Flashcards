@@ -1,6 +1,0 @@
-# Todo (1) Disable sound when info messagebox is shown.
-
-Create custom dialog box:
-https://effbot.org/tkinterbook/tkinter-dialog-windows.htm
-https://stackoverflow.com/questions/51604921/how-do-i-change-or-disable-the-default-sound-for-tkinter-message-boxes-in-python
-

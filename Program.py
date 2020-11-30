@@ -282,7 +282,7 @@ class Program(tk.Tk):
         message_text = """
         Flashcards v1.0 RC1
         
-        Copyright 2020 E. Harman
+        Copyright 2020 Ertugrul Harman
         E-mail: harmancode@gmail.com
         Twitter: https://twitter.com/harmancode
         Web: https://harman.page
