@@ -196,16 +196,31 @@ class ManageDecksFrame(tk.Frame):
             new_title = tkinter.simpledialog.askstring(title="Rename deck",
                                                        prompt="Please enter new title of the deck:",
                                                        initialvalue=self.get_selected_deck_title())
+
             if new_title is not None:
                 # print(new_title)
-                selected_index = self.get_selected_treeview_index()
 
-                deck.title = new_title
-                self.controller.database_manager.update_deck_in_db(deck.deck_id, deck.title, deck.last_study_datetime)
+                # Strip the given text first
+                new_title = new_title.strip()
 
-                self.refresh_treeview()
-                self.treeview.selection_set(selected_index)
-                self.treeview.focus(selected_index)
+                # Safety checks for given text
+                if len(new_title) > 0:
+                    if len(new_title) > Deck.MAXIMUM_LENGTH_OF_DECK_TITLE:
+                        tk.messagebox.showwarning("Too long title",
+                                                  "The title you typed was too long. It was shortened.")
+                    new_title = new_title[:Deck.MAXIMUM_LENGTH_OF_DECK_TITLE]
+
+                    selected_index = self.get_selected_treeview_index()
+
+                    deck.title = new_title
+                    self.controller.database_manager.update_deck_in_db(deck.deck_id, deck.title, deck.last_study_datetime)
+
+                    self.refresh_treeview()
+                    self.treeview.selection_set(selected_index)
+                    self.treeview.focus(selected_index)
+
+                else:
+                    tk.messagebox.showwarning("Info", "Title cannot be empty.")
         else:
             tk.messagebox.showwarning("Info", "You should create a deck first.")
             self.new_deck_button.focus_set()
