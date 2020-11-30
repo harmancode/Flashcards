@@ -23,7 +23,8 @@
 
 import random
 
-from PIL import Image, ImageTk
+from PIL import ImageTk
+# from PIL import Image, ImageTk
 
 try:
     import tkinter as tk  # python 3
@@ -36,8 +37,10 @@ from Flashcard import Flashcard
 
 
 class StudyFrame(tk.Frame):
-    NO_FLASHCARD_FOUND_TEXT = "Welcome to Flashcards!\n\nTo add some flashcards, click Flashcards in the Menu on the top of this window. Then click Add new flaschard button."
-    NO_DECK_FOUND_FLASHCARD_TEXT = "Welcome to Flashcards!\n\nTo create a deck, click Decks in the Menu on the top of this window. Then click New Deck button."
+    NO_FLASHCARD_FOUND_TEXT = "Welcome to Flashcards!\n\nTo add some flashcards, click Flashcards in the Menu on the " \
+                              "top of this window. Then click Add new flaschard button. "
+    NO_DECK_FOUND_FLASHCARD_TEXT = "Welcome to Flashcards!\n\nTo create a deck, click Decks in the Menu on the top of " \
+                                   "this window. Then click New Deck button. "
     NO_DECK_FOUND_STATUS_TEXT = "Welcome to Flashcards!"
 
     def __init__(self, parent, controller):
@@ -101,7 +104,7 @@ class StudyFrame(tk.Frame):
         except FileNotFoundError:
             tk.messagebox.showwarning("Error", "Some files are missing. Please reinstall the program.")
         except Exception as error:
-            tk.messagebox.showwarning("Error", "Error:" + error)
+            tk.messagebox.showwarning("Error", "Error:" + str(error))
 
         # Configure flashcard text
         self.flashcard_label = tk.Label(self.top_frame, text="", wraplength=350,

@@ -21,6 +21,10 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# To open PDF file with default application of the operating system
+import platform
+import subprocess
+
 import sys
 import os
 
@@ -84,9 +88,11 @@ class Program(tk.Tk):
         self.decks_menu.add_command(label="Quit", command=self.quit)
 
         # Create About menu
-        help_menu = tk.Menu(self.menu_bar, tearoff=0)
-        self.menu_bar.add_cascade(label="Help", menu=help_menu)
-        help_menu.add_command(label="About", command=self.show_about_box)
+        self.help_menu = tk.Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label="Help", menu=self.help_menu)
+        self.help_menu.add_command(label="Open manual", command=self.open_manual_file)
+        self.help_menu.add_separator()
+        self.help_menu.add_command(label="About", command=self.show_about_box)
 
         # All other views (frames, i.e. StudyFrame, DecksFrame, etc.) will be children of the container frame
         # that is set up here. We can raise any child frame to bring it to the front (to the top of the stack).
@@ -200,7 +206,7 @@ class Program(tk.Tk):
 
     def show_manage_decks_frame(self) -> None:
         """
-        Brings Study frame to the top.
+        Brings Manage Decks frame to the top.
         """
         deck = self.database_manager.deck
         frame = self.frames[Program.DECKSFRAME]
@@ -229,7 +235,7 @@ class Program(tk.Tk):
 
     def show_manage_flashcards_frame(self) -> None:
         """
-        Brings Flashcards frame to the top.
+        Brings Manage Flashcards frame to the top.
         """
         deck = self.database_manager.deck
         frame = self.frames[Program.FLASHCARDSFRAME]
@@ -274,7 +280,7 @@ class Program(tk.Tk):
         Displays about box.
         """
         message_text = """
-        Flashcards v0.1
+        Flashcards v1.0 RC1
         
         Copyright 2020 E. Harman
         E-mail: harmancode@gmail.com
@@ -328,11 +334,12 @@ class Program(tk.Tk):
             print("Error in export_deck_as_csv_file_menu_command()")
 
         if deck_to_be_exported is not None:
-            file = tkinter.filedialog.asksaveasfile(filetypes=(("CSV files", "*.csv"),
+            filename = tkinter.filedialog.asksaveasfilename(filetypes=(("CSV files", "*.csv"),
                                                                ("All files", "*.*")))
-            if file is not None:
+            if filename is not None:
 
-                filepath = file.name
+                # filepath = filename.name
+                filepath = filename
 
                 # Add .csv extension only if there is not one already.
                 if filepath[-4:].lower() != ".csv":
@@ -357,3 +364,13 @@ class Program(tk.Tk):
                                                   "create one.")
             else:
                 tk.messagebox.showwarning("Info", "Please select a deck first.")
+
+    def open_manual_file(self):
+        # Source: https://stackoverflow.com/a/435669
+        filepath = self.resource_path(r"manual\Flashcards.pdf")
+        if platform.system() == 'Darwin':  # macOS
+            subprocess.call(('open', filepath))
+        elif platform.system() == 'Windows':  # Windows
+            os.startfile(filepath)
+        else:  # linux variants
+            subprocess.call(('xdg-open', filepath))
