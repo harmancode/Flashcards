@@ -40,8 +40,6 @@ from ImportExportManager import ImportExportManager
 
 
 class Program(tk.Tk):
-    # WINDOW_WIDTH = 510
-    # WINDOW_HEIGHT = 442
 
     WINDOW_WIDTH = 510
     WINDOW_HEIGHT = 442
@@ -336,7 +334,7 @@ class Program(tk.Tk):
         if deck_to_be_exported is not None:
             filename = tkinter.filedialog.asksaveasfilename(filetypes=(("CSV files", "*.csv"),
                                                                ("All files", "*.*")))
-            if filename is not None:
+            if filename != "":
 
                 # filepath = filename.name
                 filepath = filename
@@ -358,6 +356,11 @@ class Program(tk.Tk):
                     """
 
                     tk.messagebox.showinfo("Info", export_message)
+
+            else:
+                # Cancel pressed
+                pass
+
         else:
             if len(self.database_manager.decks) == 0:
                 tk.messagebox.showwarning("Info", "There is not any deck to export. Click on \"New deck\" button to "
@@ -366,6 +369,9 @@ class Program(tk.Tk):
                 tk.messagebox.showwarning("Info", "Please select a deck first.")
 
     def open_manual_file(self):
+        """
+        Opens the manual file by using the default PDF reader of the operating system
+        """
         # Source: https://stackoverflow.com/a/435669
         filepath = self.resource_path(r"manual\Flashcards.pdf")
         if platform.system() == 'Darwin':  # macOS
