@@ -1,5 +1,8 @@
 Welcome to Flashcards!
 
+Readme File Version: 1.0
+Readme File Date: 25 December 2020
+
 -------------------------------------------------------------------
 How to run the program from source code files on Microsoft Windows:
 -------------------------------------------------------------------
@@ -48,5 +51,9 @@ CSV files:
 
 	If there is a csv directory in your program folder, then you are provided with example csv files for testing purposes. Feel free to import them to the program and use them. To learn how to import them please refer to the manual.
 
+-------------------------------------------------------------------
+Acknowledgements:
+-------------------------------------------------------------------
+Program icon is made by Freepik (https://www.flaticon.com/authors/freepik) from www.flaticon.com
 
 Enjoy!
