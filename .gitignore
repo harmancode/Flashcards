@@ -9,8 +9,13 @@ __pycache__/
 # db files
 *.db
 
+# .bak files
+*.bak
+
 # other files and folders
 other/
+build.bat
+Flashcards.spec
 
 # csv files
 *.csv
