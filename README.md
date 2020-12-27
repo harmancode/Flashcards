@@ -5,6 +5,16 @@ Built with Python. Stores the data in a SQLite3 database. Database is managed wi
 
 Thanks to Python, it is a cross-platform software, can be used on Windows, MacOS, and GNU/Linux. 
 
+## Download
+
+### Option 1:
+You can download the source code from GitHub: https://github.com/harmancode/Flashcards 
+Follow the instructions below to run the program from source code.
+
+### Option 2:
+If you are using Microsoft Windows you can also download portable binary packages from project's GitHub page: https://github.com/harmancode/Flashcards 
+They are listed under Releases header. Click on the tags link.
+
 ## How to install/run
 
 ### How to run the program from source code files on Microsoft Windows:
