@@ -64,9 +64,11 @@ class ManageFlashcardsFrame(tk.Frame):
 
         # Format columns
         # We set width as 0 because we will not use parent-children rows
-        self.treeview.column("#0", width=0, minwidth=0)
-        self.treeview.column("#1", anchor="w", width="364")
-        self.treeview.column("#2", anchor="e", width="80")
+        self.treeview.column("#0", width=0, minwidth=0, stretch=tk.NO)
+        # self.treeview.column("#1", anchor="w", width="364")
+        # self.treeview.column("#2", anchor="e", width="80")
+        self.treeview.column("#1", anchor="w")
+        self.treeview.column("#2", anchor="e")
 
         # Create headings to the columns
         self.treeview.heading("#0", text="")

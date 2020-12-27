@@ -23,6 +23,8 @@
 
 from typing import Optional
 
+import platform
+
 from Deck import Deck
 
 try:
@@ -70,9 +72,16 @@ class ManageDecksFrame(tk.Frame):
 
         # Format columns
         # We set width as 0 because we will not use parent-children rows
+        if platform.system() == 'Darwin':  # macOS
+            column1_width = 210
+        elif platform.system() == 'Windows':  # Windows
+            column1_width = 210        
+        else:  # linux variants
+            column1_width = 210 + 130
+        # end if
         self.treeview.column("#0", width=0, minwidth=0)
-        self.treeview.column("#1", anchor="w", width="235")
-        self.treeview.column("#2", anchor="e", width="70")
+        self.treeview.column("#1", anchor="w", width=str(column1_width))
+        self.treeview.column("#2", anchor="e", width="95")
         self.treeview.column("#3", anchor="e", width="70")
         self.treeview.column("#4", anchor="e", width="70")
 

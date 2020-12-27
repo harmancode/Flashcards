@@ -21,6 +21,9 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import os
+import platform
+
 import random
 
 from PIL import ImageTk
@@ -89,21 +92,41 @@ class StudyFrame(tk.Frame):
         # status_frame is for status bar
         self.status_frame = tk.Frame(self)
 
+        # Necessary to center the frames horizontally 
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
         self.top_frame.grid(row=0, column=0, pady=10, padx=10, sticky="nsew")
         self.bottom_frame.grid(row=1, column=0, pady=10, padx=10, sticky="new")
         self.status_frame.grid(row=2, column=0, pady=0, padx=10, sticky="new")
 
-        question_image_path = self.controller.resource_path("image\index_card_for_question.png")
-        answer_image_path = self.controller.resource_path("image\index_card_for_answer.png")
-        # print("question_image_path: ", question_image_path)
+        # Necessary to center the frame horizontally 
+        self.top_frame.grid_rowconfigure(0, weight=1)
+        self.top_frame.grid_columnconfigure(0, weight=1)
 
         try:
+            if platform.system() == 'Darwin':  # macOS
+                question_image_path = self.controller.resource_path("image/index_card_for_question.png")
+                answer_image_path = self.controller.resource_path("image/index_card_for_answer.png")
+            elif platform.system() == 'Windows':  # Windows
+                question_image_path = self.controller.resource_path("image\index_card_for_question.png")
+                answer_image_path = self.controller.resource_path("image\index_card_for_answer.png")
+            else:  # linux variants
+                question_image_path = self.controller.resource_path("image/index_card_for_question.png")
+                answer_image_path = self.controller.resource_path("image/index_card_for_answer.png")
+            # end if
+
+            # question_image_path = self.controller.resource_path("image\index_card_for_question.png")
+            # answer_image_path = self.controller.resource_path("image\index_card_for_answer.png")
+            # print("question_image_path: ", question_image_path)
+        
             self.index_card_image_for_question = ImageTk.PhotoImage(master=self.top_frame, file=question_image_path)
             self.index_card_image_for_answer = ImageTk.PhotoImage(master=self.top_frame, file=answer_image_path)
             # self.index_card_image_for_question = tk.PhotoImage(master=self.top_frame, file=image_path)
         except FileNotFoundError:
             tk.messagebox.showwarning("Error", "Some files are missing. Please reinstall the program.")
         except Exception as error:
+            print("Error 118 in StudyFrame")
             tk.messagebox.showwarning("Error", "Error:" + str(error))
 
         # Configure flashcard text
@@ -111,6 +134,9 @@ class StudyFrame(tk.Frame):
                                         font=("Arial", 14, "bold"),
                                         image=self.index_card_image_for_question, compound=tk.CENTER)
         self.flashcard_label.grid(row=0, column=0)
+
+        self.flashcard_label.grid_rowconfigure(0, weight=1)
+        self.flashcard_label.grid_columnconfigure(0, weight=1)
 
         # Create three buttons for the bottom frame
         self.very_hard_button = tk.ttk.Button(self.bottom_frame, text='Very Hard',

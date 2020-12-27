@@ -31,13 +31,13 @@ import os
 import tkinter as tk
 import tkinter.ttk
 import tkinter.filedialog
+from PIL import ImageTk
 
 from ManageFlashcardsFrame import ManageFlashcardsFrame
 from StudyFrame import StudyFrame
 from ManageDecksFrame import ManageDecksFrame
 from DatabaseManager import DatabaseManager
 from ImportExportManager import ImportExportManager
-
 
 class Program(tk.Tk):
 
@@ -59,8 +59,20 @@ class Program(tk.Tk):
 
         # Set the app favicon
         # The r prefix specifies it as a raw string. See: https://stackoverflow.com/q/55890931/3780985
-        icon_path = self.resource_path(r"icon\favicon.ico")
-        self.iconbitmap(self, icon_path)
+        if platform.system() == 'Darwin':  # macOS
+            icon_path = self.resource_path(r"icon/favicon.ico")
+            img = tk.PhotoImage(file=icon_path)
+            self.iconbitmap(self, icon_path)
+        elif platform.system() == 'Windows':  # Windows
+            icon_path = self.resource_path(r"icon\favicon.ico")
+            self.iconbitmap(self, icon_path)
+        else:  # linux variants
+            icon_path = self.resource_path(r"icon/favicon.gif")
+            # self.iconbitmap(self, icon_path)
+            img = tk.PhotoImage(file=icon_path)                      
+            # self.tk.iconphoto(True, img)
+            # self.tk.call('wm', 'iconphoto', root._w, img)
+        # end set the app favicon
 
         # Set title of the main window
         self.title("Flashcards")
@@ -256,9 +268,18 @@ class Program(tk.Tk):
         """
         Center the window on the screen.
         """
-        window_width = Program.WINDOW_WIDTH
-        window_height = Program.WINDOW_HEIGHT
 
+        if platform.system() == 'Darwin':  # macOS
+            window_width = Program.WINDOW_WIDTH
+            window_height = Program.WINDOW_HEIGHT
+        elif platform.system() == 'Windows':  # Windows
+            window_width = Program.WINDOW_WIDTH
+            window_height = Program.WINDOW_HEIGHT
+        else:  # linux variants
+            window_width = Program.WINDOW_WIDTH + 130
+            window_height = Program.WINDOW_HEIGHT
+        # end if
+        
         # print(self.winfo_width())
         # print(self.winfo_height())
 
@@ -286,8 +307,6 @@ class Program(tk.Tk):
         Web: https://harman.page
         
         Flashcards is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-        
-        This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
         
         See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
         """
@@ -373,10 +392,12 @@ class Program(tk.Tk):
         Opens the manual file by using the default PDF reader of the operating system
         """
         # Source: https://stackoverflow.com/a/435669
-        filepath = self.resource_path(r"manual\Flashcards.pdf")
         if platform.system() == 'Darwin':  # macOS
+            filepath = self.resource_path(r"manual/Flashcards.pdf")
             subprocess.call(('open', filepath))
         elif platform.system() == 'Windows':  # Windows
+            filepath = self.resource_path(r"manual\Flashcards.pdf")
             os.startfile(filepath)
         else:  # linux variants
+            filepath = self.resource_path(r"manual/Flashcards.pdf")
             subprocess.call(('xdg-open', filepath))
