@@ -36,7 +36,7 @@ They are listed under Releases header. Click on the tags link.
 	Step 5: TO RUN THE PROGRAM:
 			While you are in the Flashcards program directory, type the following command, and press ENTER: 
 			
-			py main.py
+			python3 main.py
 			
 To learn how to use the program, please open and read the manual file located in the manual directory.
 
