@@ -41,6 +41,10 @@ Follow the instructions below to run the program from source code.
 If you are using Microsoft Windows you can also download portable binary packages from project's GitHub page: https://github.com/harmancode/Flashcards 
 They are listed under Releases header. Click on the tags link.
 
+## Manual
+
+![Click here to open the manual.](./manual/Flashcards.pdf)
+
 ## How to install/run
 
 ### How to run the program from source code files on Microsoft Windows:
