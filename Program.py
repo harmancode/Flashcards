@@ -31,7 +31,6 @@ import os
 import tkinter as tk
 import tkinter.ttk
 import tkinter.filedialog
-from PIL import ImageTk
 
 from ManageFlashcardsFrame import ManageFlashcardsFrame
 from StudyFrame import StudyFrame
@@ -41,6 +40,7 @@ from ImportExportManager import ImportExportManager
 
 class Program(tk.Tk):
 
+    VERSION_NUMBER = "v1.0 RC2"
     WINDOW_WIDTH = 510
     WINDOW_HEIGHT = 442
     STUDYFRAME = "StudyFrame"
@@ -297,17 +297,17 @@ class Program(tk.Tk):
         Displays about box.
         """
         message_text = """
-        Flashcards v1.0 RC1
+        Flashcards {}
         
         Copyright 2020 Ertugrul Harman
+        
+        GitHub: https://github.com/harmancode/Flashcards
         E-mail: harmancode@gmail.com
         Twitter: https://twitter.com/harmancode
         Web: https://harman.page
         
-        Flashcards is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-        
-        See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
-        """
+        Flashcards is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. See the GNU General Public License for more details. https://www.gnu.org/licenses/
+        """.format(Program.VERSION_NUMBER)
         tk.messagebox.showinfo(title="About Flashcards", message=message_text)
 
     def import_deck_from_csv_file(self) -> None:
