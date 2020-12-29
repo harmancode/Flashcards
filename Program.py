@@ -60,18 +60,16 @@ class Program(tk.Tk):
         # Set the app favicon
         # The r prefix specifies it as a raw string. See: https://stackoverflow.com/q/55890931/3780985
         if platform.system() == 'Darwin':  # macOS
-            icon_path = self.resource_path(r"icon/favicon.ico")
-            img = tk.PhotoImage(file=icon_path)
-            self.iconbitmap(self, icon_path)
+            icon_path = self.resource_path(r"icon/favicon.gif")
+            img = tk.PhotoImage(file=icon_path)                      
+            self.tk.call('wm', 'iconphoto', self._w, img)
         elif platform.system() == 'Windows':  # Windows
             icon_path = self.resource_path(r"icon\favicon.ico")
             self.iconbitmap(self, icon_path)
         else:  # linux variants
             icon_path = self.resource_path(r"icon/favicon.gif")
-            # self.iconbitmap(self, icon_path)
             img = tk.PhotoImage(file=icon_path)                      
-            # self.tk.iconphoto(True, img)
-            # self.tk.call('wm', 'iconphoto', root._w, img)
+            self.tk.call('wm', 'iconphoto', self._w, img)
         # end set the app favicon
 
         # Set title of the main window
