@@ -5,6 +5,32 @@ Built with Python. Stores the data in a SQLite3 database. Database is managed wi
 
 It can be used on Windows and GNU/Linux.
 
+## Screenshots
+
+### Decks
+
+
+![Decks](./image/screenshots/Decks%20view.png)
+
+
+### Flashcards
+
+
+![Flashcards](./image/screenshots/Flashcards%20view.png)
+
+
+### Question (Front)
+
+
+![Question](./image/screenshots/Question%20view.png)
+
+
+### Answer (Back)
+
+
+![Answer](./image/screenshots/Answer%20view.png)
+
+
 ## Download
 
 ### Option 1:
