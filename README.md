@@ -3,7 +3,7 @@ Flashcards is a cross-platform study tool. It calculates which flashcards you sh
 
 Built with Python. Stores the data in a SQLite3 database. Database is managed with SQL queries. Object-oriented programming principles and techniques applied in a Pythonic way. CSV module is used to code import/export operations. GUI is designed by using tkinter libraries and its grid system. One-directory package made ready by pyinstaller. Maintained source control via Git.  Stored remotely on GitHub.
 
-Thanks to Python, it is a cross-platform software, can be used on Windows, MacOS, and GNU/Linux. 
+It can be used on Windows and GNU/Linux.
 
 ## Download
 
