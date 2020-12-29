@@ -82,7 +82,7 @@ To learn how to use the program, please open and read the manual file located in
 	
 			sudo apt install python3-tk python3-pip 
 		
-	Step 4: If PIL (Pillow) module is not already installed on your computer (if you have just applied step 1, then you must apply this step 4 now), type the following command in the command prompt to install 'PIL' module (do this just once), and press ENTER:
+	Step 4: If PIL (Pillow) module is not already installed on your computer, type the following command in the command prompt to install 'PIL' module (do this just once), and press ENTER:
 	
 			python3 -m pip install --upgrade pip
 		
@@ -95,7 +95,7 @@ To learn how to use the program, please open and read the manual file located in
 
 ### How to run the program from .exe package on Microsoft Windows:
 
-	Simply run the Flashcards.exe file. There is no need to install Flashcards on your systme. It is a portable directory. You can run it from anywhere, including from a flash drive.
+	Simply run the Flashcards.exe file. There is no need to install Flashcards on your system. It is a portable directory. You can run it from anywhere, including from a flash drive.
 
 ## Troubleshooting
 
