@@ -38,8 +38,7 @@ You can download the source code from GitHub: https://github.com/harmancode/Flas
 Follow the instructions below to run the program from source code.
 
 ### Option 2:
-If you are using Microsoft Windows you can also download portable binary packages from project's GitHub page: https://github.com/harmancode/Flashcards 
-They are listed under Releases header. Click on the tags link.
+If you are using Microsoft Windows you can also download portable binary packages from project's ![GitHub page](https://github.com/harmancode/Flashcards/releases).
 
 ## Manual
 
