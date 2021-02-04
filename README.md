@@ -1,7 +1,7 @@
 # Flashcards
 Flashcards is a cross-platform study tool. It calculates which flashcards you should study, and how often, based on a psychologically-proven spaced repetition algorithm. Create, edit, import, and export your own decks and flashcards, and do not forget anything you learn ever again!
 
-It can be used on Windows and GNU/Linux.
+It can be used on Windows and GNU/Linux. MacOS will be supported.
 
 ## Screenshots
 
