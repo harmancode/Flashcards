@@ -39,7 +39,7 @@ class ImportExportManager:
 
     def __init__(self, database_manager: DatabaseManager):
         """
-        ImportExportManager class handles importing (and -not yet- exporting) data operations.
+        ImportExportManager class handles importing and exporting data operations.
         :param database_manager: DatabaseManager
         """
         self.database_manager: DatabaseManager = database_manager
