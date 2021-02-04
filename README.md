@@ -1,8 +1,6 @@
 # Flashcards
 Flashcards is a cross-platform study tool. It calculates which flashcards you should study, and how often, based on a psychologically-proven spaced repetition algorithm. Create, edit, import, and export your own decks and flashcards, and do not forget anything you learn ever again!
 
-Built with Python. Stores the data in a SQLite3 database. Database is managed with SQL queries. Object-oriented programming principles and techniques applied in a Pythonic way. CSV module is used to code import/export operations. GUI is designed by using tkinter libraries and its grid system. One-directory package made ready by pyinstaller. Maintained source control via Git.  Stored remotely on GitHub.
-
 It can be used on Windows and GNU/Linux.
 
 ## Screenshots
